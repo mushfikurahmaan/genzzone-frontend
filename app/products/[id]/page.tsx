@@ -5,8 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { Product, productApi, getImageUrl } from '@/lib/api';
 import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
-import { useCart } from '@/contexts/CartContext';
-
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -14,9 +12,6 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { addToCart } = useCart();
-  const [adding, setAdding] = useState(false);
-  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -148,35 +143,10 @@ export default function ProductDetailPage() {
 
             <div className="flex gap-4">
               <button
-                className={`flex-1 py-4 px-6 rounded border-2 border-black text-base font-medium transition-colors ${
-                  isOutOfStock
-                    ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
-                    : added
-                    ? 'bg-green-600 text-white border-green-600'
-                    : 'bg-white text-black hover:bg-black hover:text-white'
-                }`}
-                disabled={isOutOfStock || adding}
-                onClick={async () => {
-                  if (isOutOfStock || adding) return;
-                  try {
-                    setAdding(true);
-                    await addToCart(product.id, 1);
-                    setAdded(true);
-                    setTimeout(() => setAdded(false), 2000);
-                  } catch (error: any) {
-                    alert(error.response?.data?.error || 'Failed to add to cart');
-                  } finally {
-                    setAdding(false);
-                  }
-                }}
+                className="flex-1 py-4 px-6 rounded border-2 border-gray-300 text-base font-medium transition-opacity opacity-30 cursor-not-allowed bg-gray-100 text-gray-400"
+                disabled={true}
               >
-                {isOutOfStock
-                  ? 'Sold Out'
-                  : adding
-                  ? 'Adding...'
-                  : added
-                  ? 'Added to Cart!'
-                  : 'Add to Cart'}
+                Add to Cart
               </button>
               <button
                 className={`flex-1 py-4 px-6 rounded border-2 border-black text-base font-medium transition-colors ${

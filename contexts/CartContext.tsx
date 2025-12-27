@@ -1,12 +1,11 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { cartApi, Cart, CartItem } from '@/lib/api';
+import { createContext, useContext, ReactNode } from 'react';
 
 interface CartContextType {
-  cart: Cart | null;
-  loading: boolean;
-  itemCount: number;
+  cart: null;
+  loading: false;
+  itemCount: 0;
   addToCart: (productId: number, quantity?: number) => Promise<void>;
   updateCartItem: (itemId: number, quantity: number) => Promise<void>;
   removeCartItem: (itemId: number) => Promise<void>;
@@ -17,78 +16,33 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<Cart | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchCart = async () => {
-    try {
-      setLoading(true);
-      const cartData = await cartApi.get();
-      setCart(cartData);
-    } catch (error) {
-      console.error('Error fetching cart:', error);
-      setCart(null);
-    } finally {
-      setLoading(false);
-    }
+  // Stub implementations - cart functionality disabled
+  const addToCart = async () => {
+    // No-op
   };
 
-  useEffect(() => {
-    fetchCart();
-  }, []);
-
-  const addToCart = async (productId: number, quantity: number = 1) => {
-    try {
-      const updatedCart = await cartApi.add({ product_id: productId, quantity });
-      setCart(updatedCart);
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      throw error;
-    }
+  const updateCartItem = async () => {
+    // No-op
   };
 
-  const updateCartItem = async (itemId: number, quantity: number) => {
-    try {
-      const updatedCart = await cartApi.updateItem(itemId, { quantity });
-      setCart(updatedCart);
-    } catch (error) {
-      console.error('Error updating cart item:', error);
-      throw error;
-    }
-  };
-
-  const removeCartItem = async (itemId: number) => {
-    try {
-      const updatedCart = await cartApi.removeItem(itemId);
-      setCart(updatedCart);
-    } catch (error) {
-      console.error('Error removing cart item:', error);
-      throw error;
-    }
+  const removeCartItem = async () => {
+    // No-op
   };
 
   const clearCart = async () => {
-    try {
-      await cartApi.clear();
-      setCart(null);
-    } catch (error) {
-      console.error('Error clearing cart:', error);
-      throw error;
-    }
+    // No-op
   };
 
   const refreshCart = async () => {
-    await fetchCart();
+    // No-op
   };
-
-  const itemCount = cart?.item_count || 0;
 
   return (
     <CartContext.Provider
       value={{
-        cart,
-        loading,
-        itemCount,
+        cart: null,
+        loading: false,
+        itemCount: 0,
         addToCart,
         updateCartItem,
         removeCartItem,
@@ -108,4 +62,3 @@ export function useCart() {
   }
   return context;
 }
-

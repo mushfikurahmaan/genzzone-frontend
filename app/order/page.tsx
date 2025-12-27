@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Product, productApi, getImageUrl, orderApi, CreateOrderData, CreateMultiProductOrderData } from '@/lib/api';
-import { ArrowLeft, Plus, X } from 'lucide-react';
+import { ArrowLeft, Plus, X, Minus } from 'lucide-react';
 import Image from 'next/image';
 
 interface OrderItem {
@@ -29,10 +29,9 @@ function OrderPageContent() {
   // Form state
   const [formData, setFormData] = useState({
     customer_name: '',
-    district: '',
+    district: 'outside_dhaka',
     address: '',
     phone_number: '',
-    order_note: '',
   });
   
   // Size options (excluding the placeholder)
@@ -179,7 +178,6 @@ function OrderPageContent() {
       district: getDistrictForAPI() || '',
       address: formData.address.trim() || '',
       phone_number: formData.phone_number.trim() || '',
-      order_note: formData.order_note.trim() || '',
       products: products,
       product_total: parseFloat(productTotal.toFixed(2)),
       delivery_charge: deliveryCharge,
@@ -250,7 +248,6 @@ function OrderPageContent() {
         district: getDistrictForAPI(),
         address: formData.address.trim(),
         phone_number: formData.phone_number.trim(),
-        order_note: formData.order_note.trim() || undefined,
         products: products,
         product_total: parseFloat(getProductTotal().toFixed(2)),
         delivery_charge: getDeliveryCharge(),
@@ -392,16 +389,29 @@ function OrderPageContent() {
                         <label className="block text-sm font-medium text-black mb-2">
                           পরিমাণ <span className="text-red-500">*</span>
                         </label>
-                        <input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) => handleItemQuantityChange(index, parseInt(e.target.value) || 1)}
-                          min={1}
-                          max={item.product.stock}
-                          required
-                          disabled={isOutOfStock}
-                          className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:outline-none focus:border-black disabled:bg-gray-100 disabled:cursor-not-allowed"
-                        />
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => handleItemQuantityChange(index, item.quantity - 1)}
+                            disabled={isOutOfStock || item.quantity <= 1}
+                            className="w-10 h-10 border-2 border-gray-300 rounded flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            title="Decrease quantity"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="w-16 text-center font-medium text-lg">
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleItemQuantityChange(index, item.quantity + 1)}
+                            disabled={isOutOfStock || item.quantity >= item.product.stock}
+                            className="w-10 h-10 border-2 border-gray-300 rounded flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            title="Increase quantity"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
                         <p className="text-xs text-gray-500 mt-1">
                           In Stock: {item.product.stock}
                         </p>
@@ -606,22 +616,6 @@ function OrderPageContent() {
                     rows={3}
                     className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:outline-none focus:border-black resize-none"
                     placeholder="আপনার বাসার সম্পূর্ণ ঠিকানা"
-                  />
-                </div>
-
-
-                <div>
-                  <label htmlFor="order_note" className="block text-sm font-medium text-black mb-2">
-                    অর্ডার নোট
-                  </label>
-                  <textarea
-                    id="order_note"
-                    name="order_note"
-                    value={formData.order_note}
-                    onChange={handleInputChange}
-                    rows={3}
-                    className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:outline-none focus:border-black resize-none"
-                    placeholder="স্পেশাল কিছু বলতে চাইলে লেখুন (অপশনাল)"
                   />
                 </div>
 
