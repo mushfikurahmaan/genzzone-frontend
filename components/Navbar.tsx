@@ -5,18 +5,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search, ShoppingBag, Menu, X } from 'lucide-react';
 import { notificationApi, Notification } from '@/lib/api';
-import { useCart } from '@/contexts/CartContext';
-
 export function Navbar() {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
+  const [isMenSubmenuOpen, setIsMenSubmenuOpen] = useState(false);
   const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [orderId, setOrderId] = useState('');
   const [notification, setNotification] = useState<Notification | null>(null);
-  const { itemCount } = useCart();
 
   useEffect(() => {
     async function fetchNotification() {
@@ -33,10 +31,16 @@ export function Navbar() {
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
     setIsCategoriesOpen(false);
+    setIsMenSubmenuOpen(false);
   };
 
   const toggleCategories = () => {
     setIsCategoriesOpen(!isCategoriesOpen);
+    setIsMenSubmenuOpen(false);
+  };
+
+  const toggleMenSubmenu = () => {
+    setIsMenSubmenuOpen(!isMenSubmenuOpen);
   };
 
   const openTrackingModal = () => {
@@ -169,13 +173,8 @@ export function Navbar() {
               >
                 <Search className="w-5 h-5 text-black cursor-pointer" />
               </button>
-              <Link href="/cart" className="relative">
-                <ShoppingBag className="w-5 h-5 text-black cursor-pointer" />
-                {itemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-black text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {itemCount > 9 ? '9+' : itemCount}
-                  </span>
-                )}
+              <Link href="/cart" className="relative opacity-30 pointer-events-none">
+                <ShoppingBag className="w-5 h-5 text-gray-400" />
               </Link>
             </div>
           </div>
@@ -205,12 +204,37 @@ export function Navbar() {
               {/* Dropdown Menu */}
               <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div className="py-2">
-                  <Link
-                    href="/products?category=men"
-                    className="block px-4 py-2 text-sm text-black hover:bg-gray-100"
-                  >
-                    Men
-                  </Link>
+                  <div className="relative group/men">
+                    <Link
+                      href="/products?category=men"
+                      className="block px-4 py-2 text-sm text-black hover:bg-gray-100"
+                    >
+                      Men
+                    </Link>
+                    {/* Men Submenu */}
+                    <div className="absolute left-full top-0 ml-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover/men:opacity-100 group-hover/men:visible transition-all duration-200 z-50">
+                      <div className="py-2">
+                        <Link
+                          href="/products?category=men"
+                          className="block px-4 py-2 text-sm text-black hover:bg-gray-100"
+                        >
+                          All Men
+                        </Link>
+                        <Link
+                          href="/products?category=men_shirt"
+                          className="block px-4 py-2 text-sm text-black hover:bg-gray-100"
+                        >
+                          Shirt
+                        </Link>
+                        <Link
+                          href="/products?category=men_panjabi"
+                          className="block px-4 py-2 text-sm text-black hover:bg-gray-100"
+                        >
+                          Panjabi
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
                   <Link
                     href="/products?category=womens"
                     className="block px-4 py-2 text-sm text-black hover:bg-gray-100"
@@ -330,13 +354,43 @@ export function Navbar() {
               {/* Mobile Categories Dropdown */}
               {isCategoriesOpen && (
                 <div className="pl-4 mt-2 space-y-2">
-                  <Link
-                    href="/products?category=men"
-                    className="block text-sm text-gray-700 hover:text-black py-2"
-                    onClick={closeMobileMenu}
-                  >
-                    Men
-                  </Link>
+                  <div>
+                    <button
+                      onClick={toggleMenSubmenu}
+                      className="w-full text-left text-sm text-gray-700 hover:text-black py-2 flex items-center justify-between"
+                    >
+                      <span>Men</span>
+                      <span className={`transform transition-transform ${isMenSubmenuOpen ? 'rotate-90' : ''}`}>
+                        ›
+                      </span>
+                    </button>
+                    {/* Men Submenu - Only visible when isMenSubmenuOpen is true */}
+                    {isMenSubmenuOpen && (
+                      <div className="pl-4 mt-1 space-y-1">
+                        <Link
+                          href="/products?category=men"
+                          className="block text-xs text-gray-600 hover:text-black py-1"
+                          onClick={closeMobileMenu}
+                        >
+                          All Men
+                        </Link>
+                        <Link
+                          href="/products?category=men_shirt"
+                          className="block text-xs text-gray-600 hover:text-black py-1"
+                          onClick={closeMobileMenu}
+                        >
+                          Shirt
+                        </Link>
+                        <Link
+                          href="/products?category=men_panjabi"
+                          className="block text-xs text-gray-600 hover:text-black py-1"
+                          onClick={closeMobileMenu}
+                        >
+                          Panjabi
+                        </Link>
+                      </div>
+                    )}
+                  </div>
                   <Link
                     href="/products?category=womens"
                     className="block text-sm text-gray-700 hover:text-black py-2"

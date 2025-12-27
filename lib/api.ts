@@ -16,7 +16,7 @@ export interface Product {
   id: number;
   name: string;
   description: string;
-  category: 'men' | 'womens' | 'combo';
+  category: 'men' | 'men_shirt' | 'men_panjabi' | 'womens' | 'combo';
   regular_price: string;
   offer_price: string | null;
   current_price: string;

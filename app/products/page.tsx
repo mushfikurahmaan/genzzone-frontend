@@ -46,6 +46,8 @@ function ProductsPageContent() {
     if (!category) return 'All Products';
     const categoryMap: Record<string, string> = {
       men: 'Men\'s Products',
+      men_shirt: 'Men\'s Shirts',
+      men_panjabi: 'Men\'s Panjabi',
       womens: 'Women\'s Products',
       combo: 'Combo Products',
     };
@@ -63,7 +65,7 @@ function ProductsPageContent() {
             {isBestSelling
               ? 'Discover Our Most Popular Premium T-Shirts'
               : category 
-                ? `Discover our premium ${category === 'men' ? 'men\'s' : category === 'womens' ? 'women\'s' : 'combo'} collection`
+                ? `Discover our premium ${category === 'men' ? 'men\'s' : category === 'men_shirt' ? 'men\'s shirts' : category === 'men_panjabi' ? 'men\'s panjabi' : category === 'womens' ? 'women\'s' : 'combo'} collection`
                 : 'Explore Our Complete Collection of Premium Apparel'
             }
           </p>
