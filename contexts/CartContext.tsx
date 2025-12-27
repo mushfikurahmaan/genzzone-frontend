@@ -1,11 +1,12 @@
 'use client';
 
 import { createContext, useContext, ReactNode } from 'react';
+import { Cart } from '@/lib/api';
 
 interface CartContextType {
-  cart: null;
-  loading: false;
-  itemCount: 0;
+  cart: Cart | null;
+  loading: boolean;
+  itemCount: number;
   addToCart: (productId: number, quantity?: number) => Promise<void>;
   updateCartItem: (itemId: number, quantity: number) => Promise<void>;
   removeCartItem: (itemId: number) => Promise<void>;
