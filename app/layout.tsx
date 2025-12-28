@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CartProvider } from "@/contexts/CartContext";
+import { CsrfInitializer } from "@/components/CsrfInitializer";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -32,6 +33,7 @@ export default function RootLayout({
       <body
         className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} antialiased`}
       >
+        <CsrfInitializer />
         <CartProvider>
           <Navbar />
           <main className="min-h-screen">
