@@ -7,8 +7,7 @@ Next.js frontend for the Genzzone e-commerce platform built with React, TypeScri
 - **Product Listing**: Browse all available products with category filtering
 - **Product Details**: View detailed product information
 - **Shopping Cart**: Add, update, and remove items from cart
-- **Checkout**: Complete order with shipping information
-- **Order Confirmation**: View order details after checkout
+- **Order Confirmation**: View order details
 - **Best Selling Products**: Featured products section
 - **Responsive Design**: Mobile-first responsive layout
 
@@ -70,8 +69,7 @@ genzzone-frontend/
 │   │   ├── [id]/         # Product detail page
 │   │   └── page.tsx      # Products listing
 │   ├── cart/             # Shopping cart
-│   │   ├── page.tsx      # Cart page
-│   │   └── checkout/     # Checkout page
+│   │   └── page.tsx      # Cart page
 │   ├── order/            # Order page
 │   └── orders/           # Order confirmation
 ├── components/            # React components
@@ -95,7 +93,7 @@ The frontend communicates with the Django backend through RESTful APIs:
 - **Best Selling**: `GET /api/best-selling/`
 - **Notifications**: `GET /api/notifications/active/`
 - **Cart**: `GET /api/cart/`, `POST /api/cart/add/`, `PUT /api/cart/items/{id}/`, `DELETE /api/cart/items/{id}/remove/`
-- **Orders**: `POST /api/orders/create/`, `POST /api/cart/checkout/`
+- **Orders**: `POST /api/orders/create/`
 
 All API calls use session-based authentication (cookies) with `withCredentials: true`.
 

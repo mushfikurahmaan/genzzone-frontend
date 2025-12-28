@@ -12,7 +12,6 @@ export default function CartPage() {
   const router = useRouter();
   const { cart, loading, updateCartItem, removeCartItem, clearCart } = useCart();
   const [updating, setUpdating] = useState<number | null>(null);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const handleQuantityChange = async (itemId: number, newQuantity: number) => {
     if (newQuantity < 1) return;
@@ -34,10 +33,6 @@ export default function CartPage() {
         alert(error.response?.data?.error || 'Failed to remove item');
       }
     }
-  };
-
-  const handleCheckout = () => {
-    router.push('/cart/checkout');
   };
 
   if (loading) {
@@ -198,13 +193,6 @@ export default function CartPage() {
                 </div>
               </div>
             </div>
-            <button
-              onClick={handleCheckout}
-              disabled={checkoutLoading}
-              className="w-full py-3 bg-black text-white rounded hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-            >
-              {checkoutLoading ? 'Processing...' : 'Proceed to Checkout'}
-            </button>
             <button
               onClick={() => router.push('/products')}
               className="w-full py-3 mt-3 border-2 border-black text-black rounded hover:bg-black hover:text-white transition-colors font-medium"
