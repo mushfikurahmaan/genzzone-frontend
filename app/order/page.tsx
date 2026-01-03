@@ -325,8 +325,8 @@ function OrderPageContent() {
                                 {item.product.name}
                               </a>
                               <p className="text-sm text-gray-600 capitalize mb-1">{item.product.category}</p>
-                              <div className="text-base font-bold text-black">
-                                Tk {parseFloat(item.product.current_price).toFixed(0)}.00 BDT
+                              <div className="text-base font-normal text-black">
+                                ৳{parseFloat(item.product.current_price).toFixed(0)}.00
                               </div>
                             </div>
                             {orderItems.length > 1 && (
@@ -520,7 +520,7 @@ function OrderPageContent() {
 
                 <div>
                   <label htmlFor="address" className="block text-sm font-medium text-black mb-2">
-                    ঠিকানা <span className="text-red-500">*</span>
+                    ঠিকানা <span className="text-red-500">*</span> <span className="text-gray-600 font-normal">(গ্রাম/থানা/জেলা)</span>
                   </label>
                   <textarea
                     id="address"
@@ -530,7 +530,7 @@ function OrderPageContent() {
                     required
                     rows={3}
                     className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:outline-none focus:border-black resize-none"
-                    placeholder="বাড়ি/মহল্লা, গ্রাম/শহর, থানা, জেলা"
+                    placeholder="আপনার ঠিকানা"
                   />
                 </div>
 

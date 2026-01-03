@@ -7,28 +7,20 @@ import { Hero } from '@/components/Hero';
 import { ProductCard } from '@/components/ProductCard';
 
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>([]);
   const [bestSelling, setBestSelling] = useState<BestSelling[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [comboProducts, setComboProducts] = useState<Product[]>([]);
+  const [mensProducts, setMensProducts] = useState<Product[]>([]);
+  const [womensProducts, setWomensProducts] = useState<Product[]>([]);
+  
   const [bestSellingLoading, setBestSellingLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [comboLoading, setComboLoading] = useState(true);
+  const [mensLoading, setMensLoading] = useState(true);
+  const [womensLoading, setWomensLoading] = useState(true);
+  
   const [bestSellingError, setBestSellingError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchProducts() {
-      try {
-        setLoading(true);
-        const data = await productApi.getAll();
-        setProducts(data);
-      } catch (err) {
-        setError('Failed to load products');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProducts();
-  }, []);
+  const [comboError, setComboError] = useState<string | null>(null);
+  const [mensError, setMensError] = useState<string | null>(null);
+  const [womensError, setWomensError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchBestSelling() {
@@ -46,14 +38,67 @@ export default function Home() {
     fetchBestSelling();
   }, []);
 
+  useEffect(() => {
+    async function fetchComboProducts() {
+      try {
+        setComboLoading(true);
+        const data = await productApi.getAll(undefined, 'combo');
+        setComboProducts(data);
+      } catch (err) {
+        setComboError('Failed to load combo products');
+        console.error(err);
+      } finally {
+        setComboLoading(false);
+      }
+    }
+    fetchComboProducts();
+  }, []);
+
+  useEffect(() => {
+    async function fetchMensProducts() {
+      try {
+        setMensLoading(true);
+        const data = await productApi.getAll(undefined, 'men');
+        setMensProducts(data);
+      } catch (err) {
+        setMensError('Failed to load men\'s products');
+        console.error(err);
+      } finally {
+        setMensLoading(false);
+      }
+    }
+    fetchMensProducts();
+  }, []);
+
+  useEffect(() => {
+    async function fetchWomensProducts() {
+      try {
+        setWomensLoading(true);
+        const data = await productApi.getAll(undefined, 'womens');
+        setWomensProducts(data);
+      } catch (err) {
+        setWomensError('Failed to load women\'s products');
+        console.error(err);
+      } finally {
+        setWomensLoading(false);
+      }
+    }
+    fetchWomensProducts();
+  }, []);
+
   // Extract products from best selling items
   const bestSellingProducts = bestSelling.map(item => item.product);
   
-  // Limit products for display
-  const displayedBestSelling = bestSellingProducts.slice(0, 4);
-  const displayedProducts = products.slice(0, 8);
-  const hasMoreBestSelling = bestSellingProducts.length > 4;
-  const hasMoreProducts = products.length > 8;
+  // Limit products for display (max 8 per section)
+  const displayedBestSelling = bestSellingProducts.slice(0, 8);
+  const displayedCombo = comboProducts.slice(0, 8);
+  const displayedMens = mensProducts.slice(0, 8);
+  const displayedWomens = womensProducts.slice(0, 8);
+  
+  const hasMoreBestSelling = bestSellingProducts.length > 8;
+  const hasMoreCombo = comboProducts.length > 8;
+  const hasMoreMens = mensProducts.length > 8;
+  const hasMoreWomens = womensProducts.length > 8;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -64,7 +109,7 @@ export default function Home() {
       <section className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-4 text-black">Best Selling</h2>
-          <p className="text-lg text-gray-700">Discover Our Most Popular Premium T-Shirts</p>
+          <p className="text-lg text-gray-700">Discover Our Most Popular Premium Apparel</p>
         </div>
         {bestSellingLoading ? (
           <div className="text-center py-16">
@@ -99,38 +144,116 @@ export default function Home() {
         )}
       </section>
 
-      {/* All Products Section */}
+      {/* Combo Section */}
       <section className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-black">All Products</h2>
-          <p className="text-lg text-gray-700">Explore Our Complete Collection of Premium Apparel</p>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-black">Combo</h2>
+          <p className="text-lg text-gray-700">Special Combo Offers</p>
         </div>
-        {loading ? (
+        {comboLoading ? (
           <div className="text-center py-16">
-            <div className="text-lg text-gray-600">Loading products...</div>
+            <div className="text-lg text-gray-600">Loading combo products...</div>
           </div>
-        ) : error ? (
+        ) : comboError ? (
           <div className="text-center py-16">
-            <div className="text-lg text-red-600">{error}</div>
+            <div className="text-lg text-red-600">{comboError}</div>
           </div>
-        ) : products.length === 0 ? (
+        ) : comboProducts.length === 0 ? (
           <div className="text-center py-16">
-            <div className="text-lg text-gray-600">No products available</div>
+            <div className="text-lg text-gray-600">No combo products available</div>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {displayedProducts.map((product) => (
+              {displayedCombo.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
-            {hasMoreProducts && (
+            {hasMoreCombo && (
               <div className="text-center mt-8">
                 <Link
-                  href="/products"
+                  href="/products?category=combo"
                   className="inline-block px-8 py-3 border-2 border-black text-black hover:bg-black hover:text-white transition-colors rounded font-medium"
                 >
-                  View More Products
+                  View More Combo
+                </Link>
+              </div>
+            )}
+          </>
+        )}
+      </section>
+
+      {/* Men's Section */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-black">Men's</h2>
+          <p className="text-lg text-gray-700">Premium Men's Apparel Collection</p>
+        </div>
+        {mensLoading ? (
+          <div className="text-center py-16">
+            <div className="text-lg text-gray-600">Loading men's products...</div>
+          </div>
+        ) : mensError ? (
+          <div className="text-center py-16">
+            <div className="text-lg text-red-600">{mensError}</div>
+          </div>
+        ) : mensProducts.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="text-lg text-gray-600">No men's products available</div>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {displayedMens.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+            {hasMoreMens && (
+              <div className="text-center mt-8">
+                <Link
+                  href="/products?category=men"
+                  className="inline-block px-8 py-3 border-2 border-black text-black hover:bg-black hover:text-white transition-colors rounded font-medium"
+                >
+                  View More Men's
+                </Link>
+              </div>
+            )}
+          </>
+        )}
+      </section>
+
+      {/* Women's Section */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-black">Women's</h2>
+          <p className="text-lg text-gray-700">Elegant Women's Apparel Collection</p>
+        </div>
+        {womensLoading ? (
+          <div className="text-center py-16">
+            <div className="text-lg text-gray-600">Loading women's products...</div>
+          </div>
+        ) : womensError ? (
+          <div className="text-center py-16">
+            <div className="text-lg text-red-600">{womensError}</div>
+          </div>
+        ) : womensProducts.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="text-lg text-gray-600">No women's products available</div>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {displayedWomens.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+            {hasMoreWomens && (
+              <div className="text-center mt-8">
+                <Link
+                  href="/products?category=womens"
+                  className="inline-block px-8 py-3 border-2 border-black text-black hover:bg-black hover:text-white transition-colors rounded font-medium"
+                >
+                  View More Women's
                 </Link>
               </div>
             )}

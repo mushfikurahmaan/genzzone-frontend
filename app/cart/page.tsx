@@ -106,15 +106,15 @@ export default function CartPage() {
                     {item.product.has_offer && item.product.offer_price ? (
                       <div className="flex items-center gap-2">
                         <span className="text-gray-500 line-through">
-                          Tk {parseFloat(item.product.regular_price).toFixed(0)}.00
+                          ৳{parseFloat(item.product.regular_price).toFixed(0)}.00
                         </span>
-                        <span className="font-bold text-black">
-                          Tk {parseFloat(item.product.offer_price).toFixed(0)}.00
+                        <span className="font-normal text-black">
+                          ৳{parseFloat(item.product.offer_price).toFixed(0)}.00
                         </span>
                       </div>
                     ) : (
-                      <span className="font-bold text-black">
-                        Tk {parseFloat(item.product.regular_price).toFixed(0)}.00
+                      <span className="font-normal text-black">
+                        ৳{parseFloat(item.product.regular_price).toFixed(0)}.00
                       </span>
                     )}
                   </div>
@@ -146,8 +146,8 @@ export default function CartPage() {
                   </div>
 
                   <div className="text-right">
-                    <div className="font-bold text-lg">
-                      Tk {parseFloat(item.subtotal).toFixed(0)}.00
+                    <div className="font-normal text-lg">
+                      ৳{parseFloat(item.subtotal).toFixed(0)}.00
                     </div>
                     <button
                       onClick={() => handleRemoveItem(item.id)}
@@ -184,12 +184,12 @@ export default function CartPage() {
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Items ({cart.item_count})</span>
-                <span className="font-medium">Tk {parseFloat(cart.total).toFixed(0)}.00</span>
+                <span className="font-medium">৳{parseFloat(cart.total).toFixed(0)}.00</span>
               </div>
               <div className="border-t border-gray-200 pt-3">
-                <div className="flex justify-between text-lg font-bold">
+                <div className="flex justify-between text-lg font-normal">
                   <span>Total</span>
-                  <span>Tk {parseFloat(cart.total).toFixed(0)}.00</span>
+                  <span>৳{parseFloat(cart.total).toFixed(0)}.00</span>
                 </div>
               </div>
             </div>

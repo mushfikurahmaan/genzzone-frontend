@@ -45,26 +45,25 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         </Link>
         
-        <div className="space-y-1 mb-4 min-h-[4rem]">
+        <div className="space-y-1 mb-2">
           {product.has_offer && product.offer_price ? (
             <>
               <div className="text-xs text-gray-500 line-through font-mono">
-                Regular price Tk {parseFloat(product.regular_price).toFixed(0)}.00 BDT
+                Regular price ৳{parseFloat(product.regular_price).toFixed(0)}.00
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-lg font-bold text-black font-mono">
-                  Tk {parseFloat(product.offer_price).toFixed(0)}.00 BDT
+                <span className="text-lg font-normal text-black font-mono">
+                  ৳{parseFloat(product.offer_price).toFixed(0)}.00
                 </span>
               </div>
             </>
           ) : (
             <div className="flex items-baseline gap-2">
-              <span className="text-lg font-bold text-black font-mono">
-                Tk {parseFloat(product.regular_price).toFixed(0)}.00 BDT
+              <span className="text-lg font-normal text-black font-mono">
+                ৳{parseFloat(product.regular_price).toFixed(0)}.00
               </span>
             </div>
           )}
-          <div className="text-xs text-gray-500">Unit price / per</div>
         </div>
 
         <Link

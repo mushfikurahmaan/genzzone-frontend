@@ -43,8 +43,8 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-  --font-sans: var(--font-space-grotesk), sans-serif;
-  --font-mono: var(--font-ibm-plex-mono), monospace;
+  --font-sans: var(--font-funnel-sans), "Funnel Sans", sans-serif;
+  --font-logo: var(--font-bricolage-grotesque), "Bricolage Grotesque", sans-serif;
 }
 
 * {
@@ -54,23 +54,18 @@
 }
 
 html {
-  font-family: var(--font-space-grotesk), sans-serif;
+  font-family: var(--font-funnel-sans), "Funnel Sans", sans-serif;
 }
 
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: var(--font-space-grotesk), sans-serif;
+  font-family: var(--font-funnel-sans), "Funnel Sans", sans-serif;
 }
 
-/* Use IBM Plex Mono for numbers */
-.numbers,
-[class*="price"],
-[class*="amount"],
-.price,
-.amount {
-  font-family: var(--font-ibm-plex-mono), monospace;
-  font-variant-numeric: tabular-nums;
+/* Logo font - Bricolage Grotesque */
+.logo-font {
+  font-family: var(--font-bricolage-grotesque), "Bricolage Grotesque", sans-serif !important;
 }
 
 /* Gen Z Zone Design Enhancements */

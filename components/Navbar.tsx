@@ -157,7 +157,7 @@ export function Navbar() {
             {/* Logo */}
             <Link 
               href="/" 
-              className="text-2xl md:text-3xl font-bold tracking-tight text-center flex-1 md:flex-none" 
+              className="logo-font text-2xl md:text-3xl font-bold tracking-tight text-center flex-1 md:flex-none" 
               onClick={closeMobileMenu}
             >
               Gen Z Zone
@@ -319,7 +319,7 @@ export function Navbar() {
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <Link 
               href="/" 
-              className="text-xl font-bold"
+              className="logo-font text-xl font-bold"
               onClick={closeMobileMenu}
             >
               Gen Z Zone

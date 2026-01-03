@@ -104,22 +104,21 @@ export default function ProductDetailPage() {
               {product.has_offer && product.offer_price ? (
                 <>
                   <div className="text-sm text-gray-500 line-through font-mono">
-                    Regular price Tk {parseFloat(product.regular_price).toFixed(0)}.00 BDT
+                    Regular price ৳{parseFloat(product.regular_price).toFixed(0)}.00
                   </div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-black font-mono">
-                      Tk {parseFloat(product.offer_price).toFixed(0)}.00 BDT
+                    <span className="text-3xl font-normal text-black font-mono">
+                      ৳{parseFloat(product.offer_price).toFixed(0)}.00
                     </span>
                   </div>
                 </>
               ) : (
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-black font-mono">
-                    Tk {parseFloat(product.regular_price).toFixed(0)}.00 BDT
+                  <span className="text-3xl font-normal text-black font-mono">
+                    ৳{parseFloat(product.regular_price).toFixed(0)}.00
                   </span>
                 </div>
               )}
-              <div className="text-sm text-gray-500">Unit price / per</div>
             </div>
 
             <div className="space-y-4">
