@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Funnel_Sans } from "next/font/google";
+import { Funnel_Sans, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -15,9 +15,16 @@ const funnelSans = Funnel_Sans({
   display: "swap",
 });
 
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Gen Z Zone - The Premium T-Shirt Brand of Bangladesh",
-  description: "Premium oversized drop shoulder t-shirts and stone wash collections",
+  title: "GEN-Z ZONE",
+  description: "Your premium shopping destination",
 };
 
 export default function RootLayout({
@@ -28,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${funnelSans.variable} antialiased`}
+        className={`${funnelSans.variable} ${spaceGrotesk.variable} antialiased`}
       >
         <CsrfInitializer />
         <CartProvider>

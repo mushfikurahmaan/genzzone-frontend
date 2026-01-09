@@ -101,15 +101,15 @@ export default function Home() {
   const hasMoreWomens = womensProducts.length > 8;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <Hero />
 
-      {/* Best Selling Section */}
+      {/* Trending Products Section */}
       <section className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-black">Best Selling</h2>
-          <p className="text-lg text-gray-700">Discover Our Most Popular Premium Apparel</p>
+        <div className="mb-12 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2 text-black" style={{ fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif' }}>Trending Products</h2>
+          <p className="text-sm text-gray-600">Discover our most popular items</p>
         </div>
         {bestSellingLoading ? (
           <div className="text-center py-16">
@@ -145,10 +145,10 @@ export default function Home() {
       </section>
 
       {/* Combo Section */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-black">Combo</h2>
-          <p className="text-lg text-gray-700">Special Combo Offers</p>
+      <section className="container mx-auto px-4 py-16 bg-gray-50">
+        <div className="mb-12 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2 text-black" style={{ fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif' }}>Combo</h2>
+          <p className="text-sm text-gray-600">Special combo offers for you</p>
         </div>
         {comboLoading ? (
           <div className="text-center py-16">
@@ -185,9 +185,9 @@ export default function Home() {
 
       {/* Men's Section */}
       <section className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-black">Men's</h2>
-          <p className="text-lg text-gray-700">Premium Men's Apparel Collection</p>
+        <div className="mb-12 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2 text-black" style={{ fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif' }}>Men's</h2>
+          <p className="text-sm text-gray-600">Premium men's apparel collection</p>
         </div>
         {mensLoading ? (
           <div className="text-center py-16">
@@ -223,10 +223,10 @@ export default function Home() {
       </section>
 
       {/* Women's Section */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-black">Women's</h2>
-          <p className="text-lg text-gray-700">Elegant Women's Apparel Collection</p>
+      <section className="container mx-auto px-4 py-16 bg-gray-50">
+        <div className="mb-12 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2 text-black" style={{ fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif' }}>Women's</h2>
+          <p className="text-sm text-gray-600">Elegant women's fashion collection</p>
         </div>
         {womensLoading ? (
           <div className="text-center py-16">
