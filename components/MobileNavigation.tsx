@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Phone, ArrowUp, ShoppingBag, Heart, Grid2X2, User, MessageCircle, X, Home } from 'lucide-react';
 
-export function FloatingPhoneButton() {
+export function MobileNavigation() {
   const [isVisible, setIsVisible] = useState(false);
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
+  const [popupPosition, setPopupPosition] = useState({ left: 0, arrowLeft: 32 });
+  const categoryButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const toggleVisibility = () => {
@@ -26,6 +28,16 @@ export function FloatingPhoneButton() {
   };
 
   const toggleCategoryMenu = () => {
+    if (!isCategoryMenuOpen && categoryButtonRef.current) {
+      const rect = categoryButtonRef.current.getBoundingClientRect();
+      // Position popup above the button, centered on the button
+      const buttonCenter = rect.left + rect.width / 2;
+      // Popup width is 192px (w-48), so we want to center it on the button
+      const popupLeft = Math.max(16, buttonCenter - 96);
+      // Calculate arrow position relative to popup
+      const arrowLeft = buttonCenter - popupLeft - 8; // 8px is half the arrow width
+      setPopupPosition({ left: popupLeft, arrowLeft: Math.max(8, Math.min(arrowLeft, 176)) });
+    }
     setIsCategoryMenuOpen(!isCategoryMenuOpen);
   };
 
@@ -72,33 +84,40 @@ export function FloatingPhoneButton() {
         )}
       </div>
 
-      {/* Category Menu Overlay and Popup */}
+      {/* Category Menu Popup */}
       {isCategoryMenuOpen && (
-        <>
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 md:hidden"
-            onClick={closeCategoryMenu}
-          />
-          <div className="fixed inset-0 flex items-center justify-center z-50 md:hidden p-4 pointer-events-none">
+        <div 
+          className="fixed bottom-16 z-50 md:hidden pointer-events-none"
+          style={{ left: `${popupPosition.left}px` }}
+        >
+          <div className="relative">
             <div 
-              className="bg-gray-900 rounded-lg shadow-2xl w-full max-w-xs pointer-events-auto"
+              className="bg-black rounded-lg shadow-2xl w-48 pointer-events-auto"
             >
-              <div className="p-4 space-y-3">
+              <div className="p-2 space-y-1">
                 {categories.map((category) => (
                   <Link
                     key={category.name}
                     href={category.href}
                     onClick={closeCategoryMenu}
-                    className="flex items-center justify-between px-4 py-3 text-white hover:bg-gray-800 rounded transition-colors"
+                    className="flex items-center justify-between px-3 py-2 text-white hover:bg-gray-800 rounded transition-colors"
                   >
-                    <span className="text-base font-medium">{category.name}</span>
-                    <span className="text-gray-400">›</span>
+                    <span className="text-sm font-medium">{category.name}</span>
+                    <span className="text-gray-400 text-sm">›</span>
                   </Link>
                 ))}
               </div>
             </div>
+            {/* Arrow pointing down to category icon */}
+            <div 
+              className="absolute bottom-0 w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-transparent border-t-black"
+              style={{ 
+                transform: 'translateY(100%)',
+                left: `${popupPosition.arrowLeft}px`
+              }}
+            />
           </div>
-        </>
+        </div>
       )}
 
       {/* Bottom mobile nav bar */}
@@ -106,6 +125,7 @@ export function FloatingPhoneButton() {
         <div className="max-w-screen-sm mx-auto flex items-stretch">
           {/* 1. Category */}
           <button
+            ref={categoryButtonRef}
             onClick={toggleCategoryMenu}
             className="flex-1 flex flex-col items-center justify-center py-2 text-[11px]"
           >

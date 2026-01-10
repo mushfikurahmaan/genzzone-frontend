@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CartProvider } from "@/contexts/CartContext";
 import { CsrfInitializer } from "@/components/CsrfInitializer";
-import { FloatingPhoneButton } from "@/components/FloatingPhoneButton";
+import { MobileNavigation } from "@/components/MobileNavigation";
 
 const funnelSans = Funnel_Sans({
   variable: "--font-funnel-sans",
@@ -44,7 +44,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
-          <FloatingPhoneButton />
+          <MobileNavigation />
         </CartProvider>
       </body>
     </html>
