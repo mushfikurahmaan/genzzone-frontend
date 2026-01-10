@@ -20,7 +20,7 @@ export function Footer() {
                 <ShoppingBag className="w-7 h-7 text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-bold text-red-600 leading-tight">GEN Z</span>
+                <span className="text-xl font-bold text-red-600 leading-tight">GEN-Z</span>
                 <span className="text-xl font-bold text-black leading-tight">ZONE</span>
               </div>
             </div>

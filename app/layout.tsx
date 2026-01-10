@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { Funnel_Sans, Space_Grotesk } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CartProvider } from "@/contexts/CartContext";
 import { CsrfInitializer } from "@/components/CsrfInitializer";
 import { MobileNavigation } from "@/components/MobileNavigation";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 const funnelSans = Funnel_Sans({
   variable: "--font-funnel-sans",
@@ -39,6 +41,9 @@ export default function RootLayout({
       >
         <CsrfInitializer />
         <CartProvider>
+          <Suspense fallback={null}>
+            <LoadingScreen />
+          </Suspense>
           <Navbar />
           <main className="min-h-screen">
             {children}
