@@ -125,18 +125,18 @@ export default function Home() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-6">
               {displayedBestSelling.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
             {hasMoreBestSelling && (
-              <div className="text-center mt-8">
+              <div className="text-center mt-6 md:mt-8">
                 <Link
                   href="/products?best_selling=true"
-                  className="inline-block px-8 py-3 border-2 border-black text-black hover:bg-black hover:text-white transition-colors rounded font-medium"
+                  className="inline-block px-6 md:px-8 py-2 md:py-3 border-2 border-black text-black hover:bg-black hover:text-white transition-colors rounded font-medium text-sm md:text-base"
                 >
-                  View More Best Selling
+                  View More
                 </Link>
               </div>
             )}
@@ -164,18 +164,18 @@ export default function Home() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-6">
               {displayedCombo.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
             {hasMoreCombo && (
-              <div className="text-center mt-8">
+              <div className="text-center mt-6 md:mt-8">
                 <Link
                   href="/products?category=combo"
-                  className="inline-block px-8 py-3 border-2 border-black text-black hover:bg-black hover:text-white transition-colors rounded font-medium"
+                  className="inline-block px-6 md:px-8 py-2 md:py-3 border-2 border-black text-black hover:bg-black hover:text-white transition-colors rounded font-medium text-sm md:text-base"
                 >
-                  View More Combo
+                  View More
                 </Link>
               </div>
             )}
@@ -203,18 +203,18 @@ export default function Home() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-6">
               {displayedMens.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
             {hasMoreMens && (
-              <div className="text-center mt-8">
+              <div className="text-center mt-6 md:mt-8">
                 <Link
                   href="/products?category=men"
-                  className="inline-block px-8 py-3 border-2 border-black text-black hover:bg-black hover:text-white transition-colors rounded font-medium"
+                  className="inline-block px-6 md:px-8 py-2 md:py-3 border-2 border-black text-black hover:bg-black hover:text-white transition-colors rounded font-medium text-sm md:text-base"
                 >
-                  View More Men's
+                  View More
                 </Link>
               </div>
             )}
@@ -242,18 +242,18 @@ export default function Home() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-6">
               {displayedWomens.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
             {hasMoreWomens && (
-              <div className="text-center mt-8">
+              <div className="text-center mt-6 md:mt-8">
                 <Link
                   href="/products?category=womens"
-                  className="inline-block px-8 py-3 border-2 border-black text-black hover:bg-black hover:text-white transition-colors rounded font-medium"
+                  className="inline-block px-6 md:px-8 py-2 md:py-3 border-2 border-black text-black hover:bg-black hover:text-white transition-colors rounded font-medium text-sm md:text-base"
                 >
-                  View More Women's
+                  View More
                 </Link>
               </div>
             )}

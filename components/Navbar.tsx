@@ -5,6 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search, ShoppingBag, Menu, X, Camera, Heart, User } from 'lucide-react';
 import { notificationApi, Notification } from '@/lib/api';
+
+const placeholders = [
+  'SEARCH BY NAME',
+  'SEARCH BY CATEGORY',
+];
+
 export function Navbar() {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -13,6 +19,7 @@ export function Navbar() {
   const [searchQuery, setSearchQuery] = useState('');
   const [orderId, setOrderId] = useState('');
   const [notification, setNotification] = useState<Notification | null>(null);
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
 
   useEffect(() => {
     async function fetchNotification() {
@@ -20,6 +27,14 @@ export function Navbar() {
       setNotification(activeNotification);
     }
     fetchNotification();
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
+    }, 3000); // Change placeholder every 3 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
   const toggleMobileMenu = () => {
@@ -65,7 +80,6 @@ export function Navbar() {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
       closeMobileMenu();
     }
   };
@@ -76,13 +90,13 @@ export function Navbar() {
       <div className="md:hidden bg-black">
         <div className="container mx-auto px-4 py-3">
           <form onSubmit={handleSearch} className="flex items-center">
-            <div className="flex items-center flex-1 bg-white rounded-l-md px-3 py-2">
+            <div className="flex items-center flex-1 bg-white rounded-md px-3 py-2">
               <input
                 id="search-input"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="SEARCH BY TYP"
+                placeholder={placeholders[placeholderIndex]}
                 className="flex-1 bg-transparent focus:outline-none text-xs text-gray-800 placeholder-gray-500"
               />
               <button
@@ -94,13 +108,6 @@ export function Navbar() {
                 <Camera className="w-5 h-5 text-black" />
               </button>
             </div>
-            <button
-              type="submit"
-              className="ml-2 w-10 h-10 rounded-full bg-emerald-900 flex items-center justify-center shadow-md"
-              aria-label="Search"
-            >
-              <Search className="w-5 h-5 text-white" />
-            </button>
           </form>
         </div>
       </div>
@@ -147,7 +154,7 @@ export function Navbar() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="SEARCH BY NAME"
+                  placeholder={placeholders[placeholderIndex]}
                   className="flex-1 px-4 py-2 bg-transparent focus:outline-none text-black placeholder-gray-500 text-sm"
                 />
                 <button

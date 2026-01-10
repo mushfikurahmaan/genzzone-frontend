@@ -6,11 +6,7 @@ export default function ContactUsPage() {
           <h1 className="text-3xl md:text-4xl font-bold mb-4 text-black">
             Contact Us
           </h1>
-          <div className="bg-white rounded-lg border border-gray-200 p-8 md:p-12 mt-8">
-            <p className="text-lg text-gray-700">
-              This page will be updated soon.
-            </p>
-          </div>
+          <p className="text-lg text-gray-600">This page will be updated soon</p>
         </div>
       </div>
     </div>

@@ -43,14 +43,13 @@ export function FloatingPhoneButton() {
     <>
       {/* Right side floating action buttons (mobile only) */}
       <div className="fixed right-4 bottom-32 flex flex-col gap-3 z-40 md:hidden">
-        {/* Cart */}
-        <Link
-          href="/cart"
-          className="w-11 h-11 rounded-full bg-black shadow-lg flex items-center justify-center text-white hover:bg-gray-800 transition-colors"
-          aria-label="Go to cart"
+        {/* Cart - Disabled */}
+        <div
+          className="w-11 h-11 rounded-full bg-black shadow-lg flex items-center justify-center text-white opacity-30 cursor-not-allowed pointer-events-none"
+          aria-label="Go to cart (disabled)"
         >
           <ShoppingBag className="w-5 h-5" />
-        </Link>
+        </div>
 
         {/* Wishlist */}
         <Link

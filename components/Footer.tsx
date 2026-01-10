@@ -1,7 +1,8 @@
 'use client';
 
-import { Mail, Phone, MapPin, ShoppingBag, Facebook, Youtube, ArrowUp } from 'lucide-react';
+import { Mail, Phone, MapPin, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function Footer() {
   const scrollToTop = () => {
@@ -56,9 +57,9 @@ export function Footer() {
                 <Link href="/account" className="block text-black hover:text-red-600 transition-colors">
                   Account
                 </Link>
-                <Link href="/cart" className="block text-black hover:text-red-600 transition-colors">
+                <span className="block text-black opacity-30 cursor-not-allowed pointer-events-none">
                   Cart
-                </Link>
+                </span>
                 <Link href="/wishlist" className="block text-black hover:text-red-600 transition-colors">
                   Wishlist
                 </Link>
@@ -94,20 +95,32 @@ export function Footer() {
             <h3 className="text-lg font-bold uppercase mb-4 text-black">SOCIAL LINKS</h3>
             <div className="flex items-center gap-4">
               <Link
-                href="https://facebook.com"
+                href="https://www.facebook.com/genzzone1"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
               >
-                <Facebook className="w-5 h-5" />
+                <Image
+                  src="/media/social-icons/facebook.png"
+                  alt="Facebook"
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-contain"
+                />
               </Link>
               <Link
-                href="https://youtube.com"
+                href="https://www.tiktok.com/@genzzone11"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white hover:bg-gray-800 transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
               >
-                <Youtube className="w-5 h-5" />
+                <Image
+                  src="/media/social-icons/tiktok.png"
+                  alt="TikTok"
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-contain"
+                />
               </Link>
             </div>
           </div>
