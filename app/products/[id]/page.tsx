@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { ProductCard } from '@/components/ProductCard';
 
 // Image Gallery Component
-function ProductImageGallery({ product }: { product: Product }) {
+function ProductImageGallery({ product, onImageChange }: { product: Product; onImageChange?: (index: number) => void }) {
   const images = [
     product.image,
     product.image2,
@@ -17,6 +17,11 @@ function ProductImageGallery({ product }: { product: Product }) {
   ].filter(Boolean) as string[];
 
   const [activeIndex, setActiveIndex] = useState(0);
+
+  const handleImageChange = (index: number) => {
+    setActiveIndex(index);
+    onImageChange?.(index);
+  };
 
   if (images.length === 0) {
     return (
@@ -27,11 +32,13 @@ function ProductImageGallery({ product }: { product: Product }) {
   }
 
   const handlePrevious = () => {
-    setActiveIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    const newIndex = activeIndex === 0 ? images.length - 1 : activeIndex - 1;
+    handleImageChange(newIndex);
   };
 
   const handleNext = () => {
-    setActiveIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    const newIndex = activeIndex === images.length - 1 ? 0 : activeIndex + 1;
+    handleImageChange(newIndex);
   };
 
   return (
@@ -42,7 +49,7 @@ function ProductImageGallery({ product }: { product: Product }) {
           {images.map((img, index) => (
             <button
               key={index}
-              onClick={() => setActiveIndex(index)}
+              onClick={() => handleImageChange(index)}
               className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                 activeIndex === index
                   ? 'border-black'
@@ -99,7 +106,7 @@ function ProductImageGallery({ product }: { product: Product }) {
             {images.map((img, index) => (
               <button
                 key={index}
-                onClick={() => setActiveIndex(index)}
+                onClick={() => handleImageChange(index)}
                 className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
                   activeIndex === index
                     ? 'border-black'
@@ -248,6 +255,7 @@ export default function ProductDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -327,7 +335,7 @@ export default function ProductDetailPage() {
         <div className="grid md:grid-cols-2 gap-12">
           {/* Product Image Gallery */}
           <div className="bg-white rounded-lg p-4">
-            <ProductImageGallery product={product} />
+            <ProductImageGallery product={product} onImageChange={setSelectedImageIndex} />
           </div>
 
           {/* Product Details */}
@@ -409,7 +417,7 @@ export default function ProductDetailPage() {
                 disabled={isOutOfStock}
                 onClick={() => {
                   if (!isOutOfStock) {
-                    router.push(`/order?productId=${product.id}`);
+                    router.push(`/order?productId=${product.id}&imageIndex=${selectedImageIndex}`);
                   }
                 }}
               >

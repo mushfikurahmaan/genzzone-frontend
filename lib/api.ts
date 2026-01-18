@@ -162,6 +162,7 @@ export interface CreateOrderProductItem {
   product_id: number;
   product_name: string;
   product_size: string;
+  product_image: string | null;
   quantity: number;
   unit_price: number;
   product_total: number;

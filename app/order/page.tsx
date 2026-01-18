@@ -11,12 +11,29 @@ interface OrderItem {
   product: Product;
   quantity: number;
   product_size: string;
+  selectedImageIndex: number;
+}
+
+// Helper function to get the selected image from product based on index
+function getProductImageByIndex(product: Product, index: number): string | null {
+  const images = [
+    product.image,
+    product.image2,
+    product.image3,
+    product.image4,
+  ].filter(Boolean) as string[];
+  
+  if (images.length === 0) return null;
+  // Ensure index is within bounds
+  const validIndex = Math.min(index, images.length - 1);
+  return images[validIndex] || images[0];
 }
 
 function OrderPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const productId = searchParams.get('productId') ? parseInt(searchParams.get('productId')!) : null;
+  const imageIndex = searchParams.get('imageIndex') ? parseInt(searchParams.get('imageIndex')!) : 0;
 
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +57,7 @@ function OrderPageContent() {
     customer_name: '',
     district: 'outside_dhaka',
     address: '',
-    phone_number: '',
+    phone_number: '+880',
   });
   
   // Size options (excluding the placeholder)
@@ -79,6 +96,7 @@ function OrderPageContent() {
           product: data,
           quantity: 1,
           product_size: '',
+          selectedImageIndex: imageIndex,
         }]);
       } catch (err) {
         setError('পণ্য পাওয়া যায়নি');
@@ -87,7 +105,7 @@ function OrderPageContent() {
       }
     }
     fetchProduct();
-  }, [productId]);
+  }, [productId, imageIndex]);
 
   useEffect(() => {
     async function fetchAvailableProducts() {
@@ -96,9 +114,8 @@ function OrderPageContent() {
       try {
         setLoadingProducts(true);
         const products = await productApi.getAll();
-        // Filter out products that are already in the order
-        const existingProductIds = orderItems.map(item => item.product.id);
-        const filteredProducts = products.filter(p => !existingProductIds.includes(p.id) && p.stock > 0);
+        // Show all products that are in stock (allow adding same product multiple times)
+        const filteredProducts = products.filter(p => p.stock > 0);
         setAvailableProducts(filteredProducts);
       } catch (err) {
         // Silently handle error
@@ -107,10 +124,36 @@ function OrderPageContent() {
       }
     }
     fetchAvailableProducts();
-  }, [showProductSelector, orderItems]);
+  }, [showProductSelector]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    if (name === 'phone_number') {
+      // Handle phone number with +880 prefix
+      let phoneValue = value;
+      
+      // If user tries to delete the +880 prefix, keep it
+      if (!phoneValue.startsWith('+880') && phoneValue.length > 0) {
+        // Remove any leading + or 880 if partially typed
+        phoneValue = phoneValue.replace(/^\+?8?8?0?/, '');
+        phoneValue = '+880' + phoneValue;
+      }
+      
+      // Only allow digits after +880
+      const prefix = '+880';
+      const afterPrefix = phoneValue.slice(4).replace(/\D/g, '');
+      phoneValue = prefix + afterPrefix;
+      
+      // Limit to 13 characters total (+880 + 10 digits)
+      phoneValue = phoneValue.slice(0, 14);
+      
+      setFormData(prev => ({
+        ...prev,
+        phone_number: phoneValue,
+      }));
+      return;
+    }
     
     setFormData(prev => ({
       ...prev,
@@ -135,6 +178,7 @@ function OrderPageContent() {
       product,
       quantity: 1,
       product_size: '',
+      selectedImageIndex: 0, // Default to first image for newly added products
     }]);
     setShowProductSelector(false);
   };
@@ -175,8 +219,15 @@ function OrderPageContent() {
       setError('অনুগ্রহ করে আপনার ঠিকানা লিখুন');
       return;
     }
-    if (!formData.phone_number.trim()) {
+    if (!formData.phone_number.trim() || formData.phone_number === '+880') {
       setError('অনুগ্রহ করে আপনার মোবাইল নাম্বার লিখুন');
+      return;
+    }
+    
+    // Validate Bangladesh phone number: must start with +880 and be exactly 14 characters
+    const phoneRegex = /^\+880\d{10}$/;
+    if (!phoneRegex.test(formData.phone_number)) {
+      setError('মোবাইল নাম্বার +880 দিয়ে শুরু হতে হবে এবং মোট ১৪ অক্ষর হতে হবে (যেমন: +8801XXXXXXXXX)');
       return;
     }
 
@@ -204,11 +255,13 @@ function OrderPageContent() {
       const products = orderItems.map(item => {
         const unitPrice = parseFloat(item.product.current_price);
         const itemTotal = unitPrice * item.quantity;
+        const selectedImage = getProductImageByIndex(item.product, item.selectedImageIndex);
         
         return {
           product_id: item.product.id,
           product_name: item.product.name,
           product_size: item.product_size.trim() || '',
+          product_image: selectedImage ? getImageUrl(selectedImage) : null,
           quantity: item.quantity,
           unit_price: parseFloat(unitPrice.toFixed(2)),
           product_total: parseFloat(itemTotal.toFixed(2)),
@@ -373,10 +426,10 @@ function OrderPageContent() {
                   <div className="space-y-3">
                     {completedOrder.items.map((item, index) => (
                       <div key={index} className="flex items-center gap-4 bg-gray-50 rounded-lg p-3">
-                        {getImageUrl(item.product.image) ? (
+                        {getImageUrl(getProductImageByIndex(item.product, item.selectedImageIndex)) ? (
                           <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden">
                             <Image
-                              src={getImageUrl(item.product.image)!}
+                              src={getImageUrl(getProductImageByIndex(item.product, item.selectedImageIndex))!}
                               alt={item.product.name}
                               fill
                               className="object-cover"
@@ -489,10 +542,10 @@ function OrderPageContent() {
                   return (
                     <div key={`${item.product.id}-${index}`} className="border border-gray-200 rounded p-4">
                       <div className="flex gap-4 mb-3">
-                        {getImageUrl(item.product.image) ? (
+                        {getImageUrl(getProductImageByIndex(item.product, item.selectedImageIndex)) ? (
                           <div className="relative w-20 h-20 flex-shrink-0">
                             <Image
-                              src={getImageUrl(item.product.image)!}
+                              src={getImageUrl(getProductImageByIndex(item.product, item.selectedImageIndex))!}
                               alt={item.product.name}
                               fill
                               className="object-cover rounded"
@@ -718,8 +771,11 @@ function OrderPageContent() {
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:outline-none focus:border-black"
-                    placeholder="১১ ডিজিট মোবাইল নাম্বার"
+                    placeholder="+8801XXXXXXXXX"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    বাংলাদেশি নাম্বার (+880 দিয়ে শুরু, মোট ১৪ অক্ষর)
+                  </p>
                 </div>
 
                 <div>
