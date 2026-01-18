@@ -50,6 +50,14 @@ export interface ProductCategory {
   parent_name: string | null;
 }
 
+export interface ProductColor {
+  id: number;
+  name: string;
+  image: string;
+  order: number;
+  is_active: boolean;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -66,6 +74,7 @@ export interface Product {
   image4: string | null;
   stock: number;
   is_active: boolean;
+  colors: ProductColor[];
   created_at: string;
   updated_at: string;
 }
@@ -162,6 +171,7 @@ export interface CreateOrderProductItem {
   product_id: number;
   product_name: string;
   product_size: string;
+  product_color: string | null;
   product_image: string | null;
   quantity: number;
   unit_price: number;

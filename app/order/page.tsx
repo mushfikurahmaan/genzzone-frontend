@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Product, productApi, getImageUrl, orderApi, CreateMultiProductOrderData, Order } from '@/lib/api';
+import { Product, ProductColor, productApi, getImageUrl, orderApi, CreateMultiProductOrderData, Order } from '@/lib/api';
 import { ArrowLeft, Plus, X, Minus, CheckCircle, Download, ShoppingBag } from 'lucide-react';
 import Image from 'next/image';
 import { generateOrderPDF, OrderPDFData } from '@/lib/generateOrderPDF';
@@ -11,29 +11,60 @@ interface OrderItem {
   product: Product;
   quantity: number;
   product_size: string;
-  selectedImageIndex: number;
+  selectedColor: ProductColor | null;
 }
 
-// Helper function to get the selected image from product based on index
-function getProductImageByIndex(product: Product, index: number): string | null {
-  const images = [
-    product.image,
-    product.image2,
-    product.image3,
-    product.image4,
-  ].filter(Boolean) as string[];
+// Color Selector Component for Order Page
+function OrderColorSelector({ 
+  colors, 
+  selectedColor, 
+  onColorSelect 
+}: { 
+  colors: ProductColor[]; 
+  selectedColor: ProductColor | null;
+  onColorSelect: (color: ProductColor) => void;
+}) {
+  const activeColors = colors.filter(c => c.is_active).sort((a, b) => a.order - b.order);
   
-  if (images.length === 0) return null;
-  // Ensure index is within bounds
-  const validIndex = Math.min(index, images.length - 1);
-  return images[validIndex] || images[0];
+  if (activeColors.length === 0) return null;
+
+  return (
+    <div className="mb-3">
+      <label className="block text-sm font-medium text-black mb-2">
+        <span className="uppercase tracking-wider">Colour:</span>{' '}
+        <span className="uppercase font-normal">{selectedColor?.name || activeColors[0]?.name}</span>
+      </label>
+      <div className="flex gap-2 flex-wrap">
+        {activeColors.map((color) => (
+          <button
+            key={color.id}
+            type="button"
+            onClick={() => onColorSelect(color)}
+            className={`relative w-12 h-16 overflow-hidden transition-all ${
+              (selectedColor?.id || activeColors[0]?.id) === color.id
+                ? 'ring-2 ring-black ring-offset-1'
+                : 'border border-gray-200 hover:border-gray-400'
+            }`}
+            aria-label={`Select ${color.name} color`}
+          >
+            <Image
+              src={getImageUrl(color.image)!}
+              alt={color.name}
+              fill
+              className="object-cover"
+              unoptimized
+            />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function OrderPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const productId = searchParams.get('productId') ? parseInt(searchParams.get('productId')!) : null;
-  const imageIndex = searchParams.get('imageIndex') ? parseInt(searchParams.get('imageIndex')!) : 0;
 
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,12 +122,13 @@ function OrderPageContent() {
       try {
         setLoading(true);
         const data = await productApi.getById(productId);
-        // Initialize with the first product
+        // Initialize with the first product and first active color if available
+        const activeColors = data.colors?.filter(c => c.is_active).sort((a, b) => a.order - b.order) || [];
         setOrderItems([{
           product: data,
           quantity: 1,
           product_size: '',
-          selectedImageIndex: imageIndex,
+          selectedColor: activeColors.length > 0 ? activeColors[0] : null,
         }]);
       } catch (err) {
         setError('পণ্য পাওয়া যায়নি');
@@ -105,7 +137,7 @@ function OrderPageContent() {
       }
     }
     fetchProduct();
-  }, [productId, imageIndex]);
+  }, [productId]);
 
   useEffect(() => {
     async function fetchAvailableProducts() {
@@ -174,13 +206,20 @@ function OrderPageContent() {
   };
 
   const handleAddProduct = (product: Product) => {
+    const activeColors = product.colors?.filter(c => c.is_active).sort((a, b) => a.order - b.order) || [];
     setOrderItems(prev => [...prev, {
       product,
       quantity: 1,
       product_size: '',
-      selectedImageIndex: 0, // Default to first image for newly added products
+      selectedColor: activeColors.length > 0 ? activeColors[0] : null,
     }]);
     setShowProductSelector(false);
+  };
+
+  const handleItemColorChange = (index: number, color: ProductColor) => {
+    setOrderItems(prev => prev.map((item, i) => 
+      i === index ? { ...item, selectedColor: color } : item
+    ));
   };
 
   const handleRemoveProduct = (index: number) => {
@@ -255,13 +294,13 @@ function OrderPageContent() {
       const products = orderItems.map(item => {
         const unitPrice = parseFloat(item.product.current_price);
         const itemTotal = unitPrice * item.quantity;
-        const selectedImage = getProductImageByIndex(item.product, item.selectedImageIndex);
         
         return {
           product_id: item.product.id,
           product_name: item.product.name,
           product_size: item.product_size.trim() || '',
-          product_image: selectedImage ? getImageUrl(selectedImage) : null,
+          product_color: item.selectedColor?.name || null,
+          product_image: item.product.image ? getImageUrl(item.product.image) : null,
           quantity: item.quantity,
           unit_price: parseFloat(unitPrice.toFixed(2)),
           product_total: parseFloat(itemTotal.toFixed(2)),
@@ -340,6 +379,7 @@ function OrderPageContent() {
       items: completedOrder.items.map((item) => ({
         name: item.product.name,
         size: item.product_size,
+        color: item.selectedColor?.name || null,
         quantity: item.quantity,
         unitPrice: parseFloat(item.product.current_price),
         total: parseFloat(item.product.current_price) * item.quantity,
@@ -426,10 +466,10 @@ function OrderPageContent() {
                   <div className="space-y-3">
                     {completedOrder.items.map((item, index) => (
                       <div key={index} className="flex items-center gap-4 bg-gray-50 rounded-lg p-3">
-                        {getImageUrl(getProductImageByIndex(item.product, item.selectedImageIndex)) ? (
+                        {getImageUrl(item.product.image) ? (
                           <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden">
                             <Image
-                              src={getImageUrl(getProductImageByIndex(item.product, item.selectedImageIndex))!}
+                              src={getImageUrl(item.product.image)!}
                               alt={item.product.name}
                               fill
                               className="object-cover"
@@ -444,7 +484,7 @@ function OrderPageContent() {
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-900 truncate">{item.product.name}</p>
                           <p className="text-sm text-gray-600">
-                            সাইজ: {item.product_size} | পরিমাণ: {item.quantity}
+                            সাইজ: {item.product_size}{item.selectedColor ? ` | রঙ: ${item.selectedColor.name}` : ''} | পরিমাণ: {item.quantity}
                           </p>
                         </div>
                         <div className="text-right flex-shrink-0">
@@ -542,10 +582,10 @@ function OrderPageContent() {
                   return (
                     <div key={`${item.product.id}-${index}`} className="border border-gray-200 rounded p-4">
                       <div className="flex gap-4 mb-3">
-                        {getImageUrl(getProductImageByIndex(item.product, item.selectedImageIndex)) ? (
+                        {getImageUrl(item.product.image) ? (
                           <div className="relative w-20 h-20 flex-shrink-0">
                             <Image
-                              src={getImageUrl(getProductImageByIndex(item.product, item.selectedImageIndex))!}
+                              src={getImageUrl(item.product.image)!}
                               alt={item.product.name}
                               fill
                               className="object-cover rounded"
@@ -590,6 +630,15 @@ function OrderPageContent() {
                           </div>
                         </div>
                       </div>
+                      
+                      {/* Color Selector */}
+                      {item.product.colors && item.product.colors.length > 0 && (
+                        <OrderColorSelector
+                          colors={item.product.colors}
+                          selectedColor={item.selectedColor}
+                          onColorSelect={(color) => handleItemColorChange(index, color)}
+                        />
+                      )}
                       
                       {/* Quantity Selector */}
                       <div className="mb-3">

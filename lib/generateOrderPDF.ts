@@ -13,6 +13,7 @@ export interface OrderPDFData {
   items: {
     name: string;
     size: string;
+    color: string | null;
     quantity: number;
     unitPrice: number;
     total: number;
@@ -125,20 +126,22 @@ export function generateOrderPDF(data: OrderPDFData): void {
   doc.setFillColor(240, 240, 240);
   doc.rect(20, yPos - 5, pageWidth - 40, 8, 'F');
   
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.text('Item', 22, yPos);
-  doc.text('Size', 85, yPos);
-  doc.text('Qty', 105, yPos);
-  doc.text('Price', 125, yPos);
-  doc.text('Total', 160, yPos);
+  doc.text('Size', 70, yPos);
+  doc.text('Color', 90, yPos);
+  doc.text('Qty', 120, yPos);
+  doc.text('Price', 138, yPos);
+  doc.text('Total', 165, yPos);
   yPos += 8;
 
   // Table Rows
   doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
   data.items.forEach((item) => {
     // Truncate long product names
-    const maxNameWidth = 60;
+    const maxNameWidth = 45;
     let displayName = item.name;
     if (doc.getTextWidth(displayName) > maxNameWidth) {
       while (doc.getTextWidth(displayName + '...') > maxNameWidth && displayName.length > 0) {
@@ -147,11 +150,22 @@ export function generateOrderPDF(data: OrderPDFData): void {
       displayName += '...';
     }
 
+    // Truncate long color names
+    const maxColorWidth = 25;
+    let displayColor = item.color || '-';
+    if (doc.getTextWidth(displayColor) > maxColorWidth) {
+      while (doc.getTextWidth(displayColor + '...') > maxColorWidth && displayColor.length > 0) {
+        displayColor = displayColor.slice(0, -1);
+      }
+      displayColor += '...';
+    }
+
     doc.text(displayName, 22, yPos);
-    doc.text(item.size, 85, yPos);
-    doc.text(item.quantity.toString(), 105, yPos);
-    doc.text(formatCurrency(item.unitPrice), 125, yPos);
-    doc.text(formatCurrency(item.total), 160, yPos);
+    doc.text(item.size, 70, yPos);
+    doc.text(displayColor, 90, yPos);
+    doc.text(item.quantity.toString(), 120, yPos);
+    doc.text(formatCurrency(item.unitPrice), 138, yPos);
+    doc.text(formatCurrency(item.total), 165, yPos);
     yPos += 7;
 
     // Check if we need a new page
