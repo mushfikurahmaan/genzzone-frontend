@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Product, ProductColor, productApi, getImageUrl, orderApi, CreateMultiProductOrderData, Order } from '@/lib/api';
-import { ArrowLeft, Plus, X, Minus, CheckCircle, Download, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Plus, X, Minus, CheckCircle, Download, ShoppingBag, Eye } from 'lucide-react';
 import Image from 'next/image';
 import { generateOrderPDF, OrderPDFData } from '@/lib/generateOrderPDF';
 
@@ -12,6 +12,66 @@ interface OrderItem {
   quantity: number;
   product_size: string;
   selectedColor: ProductColor | null;
+}
+
+// Image Preview Modal Component
+function ImagePreviewModal({ 
+  isOpen, 
+  onClose, 
+  imageUrl, 
+  altText 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  imageUrl: string; 
+  altText: string;
+}) {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn"
+      onClick={onClose}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+      
+      {/* Close button */}
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
+        aria-label="Close preview"
+      >
+        <X className="w-6 h-6 text-white" />
+      </button>
+      
+      {/* Image container */}
+      <div 
+        className="relative max-w-[90vw] max-h-[90vh] animate-scaleIn"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Image
+          src={imageUrl}
+          alt={altText}
+          width={800}
+          height={1000}
+          className="object-contain max-h-[90vh] w-auto"
+          unoptimized
+        />
+      </div>
+    </div>
+  );
 }
 
 // Color Selector Component for Order Page
@@ -24,40 +84,96 @@ function OrderColorSelector({
   selectedColor: ProductColor | null;
   onColorSelect: (color: ProductColor) => void;
 }) {
+  const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const longPressTriggered = useRef(false);
   const activeColors = colors.filter(c => c.is_active).sort((a, b) => a.order - b.order);
   
   if (activeColors.length === 0) return null;
 
+  const handlePreviewClick = (e: React.MouseEvent, color: ProductColor) => {
+    e.stopPropagation();
+    setPreviewImage({ url: getImageUrl(color.image)!, name: color.name });
+  };
+
+  const handleTouchStart = (color: ProductColor) => {
+    longPressTriggered.current = false;
+    longPressTimer.current = setTimeout(() => {
+      longPressTriggered.current = true;
+      setPreviewImage({ url: getImageUrl(color.image)!, name: color.name });
+    }, 1000);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const handleColorClick = (color: ProductColor) => {
+    // Only select color if long press wasn't triggered
+    if (!longPressTriggered.current) {
+      onColorSelect(color);
+    }
+    longPressTriggered.current = false;
+  };
+
   return (
-    <div className="mb-3">
-      <label className="block text-sm font-medium text-black mb-2">
-        <span className="uppercase tracking-wider">Colour:</span>{' '}
-        <span className="uppercase font-normal">{selectedColor?.name || activeColors[0]?.name}</span>
-      </label>
-      <div className="flex gap-2 flex-wrap">
-        {activeColors.map((color) => (
-          <button
-            key={color.id}
-            type="button"
-            onClick={() => onColorSelect(color)}
-            className={`relative w-12 h-16 overflow-hidden transition-all ${
-              (selectedColor?.id || activeColors[0]?.id) === color.id
-                ? 'ring-2 ring-black ring-offset-1'
-                : 'border border-gray-200 hover:border-gray-400'
-            }`}
-            aria-label={`Select ${color.name} color`}
-          >
-            <Image
-              src={getImageUrl(color.image)!}
-              alt={color.name}
-              fill
-              className="object-cover"
-              unoptimized
-            />
-          </button>
-        ))}
+    <>
+      <div className="mb-3">
+        <label className="block text-sm font-medium text-black mb-2">
+          <span className="uppercase tracking-wider">Colour:</span>{' '}
+          <span className="uppercase font-normal">{selectedColor?.name || activeColors[0]?.name}</span>
+        </label>
+        <div className="flex gap-2 flex-wrap">
+          {activeColors.map((color) => (
+            <div key={color.id} className="relative group">
+              <button
+                type="button"
+                onClick={() => handleColorClick(color)}
+                onTouchStart={() => handleTouchStart(color)}
+                onTouchEnd={handleTouchEnd}
+                onTouchCancel={handleTouchEnd}
+                className={`relative w-12 h-16 overflow-hidden transition-all select-none ${
+                  (selectedColor?.id || activeColors[0]?.id) === color.id
+                    ? 'ring-2 ring-black ring-offset-1'
+                    : 'border border-gray-200 hover:border-gray-400'
+                }`}
+                aria-label={`Select ${color.name} color. Long press to preview.`}
+              >
+                <Image
+                  src={getImageUrl(color.image)!}
+                  alt={color.name}
+                  fill
+                  className="object-cover pointer-events-none"
+                  unoptimized
+                />
+              </button>
+              {/* Eye icon overlay - hidden on touch devices */}
+              <button
+                type="button"
+                onClick={(e) => handlePreviewClick(e, color)}
+                className="absolute top-0.5 right-0.5 w-5 h-5 bg-white/90 hover:bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-sm hidden md:flex"
+                aria-label={`View ${color.name} full image`}
+              >
+                <Eye className="w-3 h-3 text-gray-700" />
+              </button>
+            </div>
+          ))}
+        </div>
+        {/* Mobile hint */}
+        <p className="text-xs text-gray-400 mt-1 md:hidden">Long press to preview image</p>
       </div>
-    </div>
+
+      {/* Image Preview Modal */}
+      <ImagePreviewModal
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        imageUrl={previewImage?.url || ''}
+        altText={previewImage?.name || ''}
+      />
+    </>
   );
 }
 
