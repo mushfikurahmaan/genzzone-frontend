@@ -169,15 +169,27 @@ function ColorSelector({
 }
 
 // Image Gallery Component - ASOS Style
-function ProductImageGallery({ product, onImageChange }: { product: Product; onImageChange?: (index: number) => void }) {
-  const images = [
+function ProductImageGallery({ product, selectedColor, onImageChange }: { product: Product; selectedColor?: ProductColor | null; onImageChange?: (index: number) => void }) {
+  const baseImages = [
     product.image,
     product.image2,
     product.image3,
     product.image4,
   ].filter(Boolean) as string[];
 
+  // If a color is selected and has an image, use it as the first image
+  const images = selectedColor?.image 
+    ? [selectedColor.image, ...baseImages.filter(img => img !== selectedColor.image)]
+    : baseImages;
+
   const [activeIndex, setActiveIndex] = useState(0);
+
+  // Reset to first image when color changes
+  useEffect(() => {
+    if (selectedColor?.image) {
+      setActiveIndex(0);
+    }
+  }, [selectedColor?.image]);
 
   const handleImageChange = (index: number) => {
     setActiveIndex(index);
@@ -365,6 +377,16 @@ export default function ProductDetailPage() {
     }
   }, [productId]);
 
+  // Initialize selected color to first active color when product loads
+  useEffect(() => {
+    if (product && product.colors && product.colors.length > 0 && !selectedColor) {
+      const activeColors = product.colors.filter(c => c.is_active).sort((a, b) => a.order - b.order);
+      if (activeColors.length > 0) {
+        setSelectedColor(activeColors[0]);
+      }
+    }
+  }, [product, selectedColor]);
+
   useEffect(() => {
     async function fetchAvailableProducts() {
       if (!product) return;
@@ -438,7 +460,7 @@ export default function ProductDetailPage() {
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Product Image Gallery */}
           <div>
-            <ProductImageGallery product={product} onImageChange={setSelectedImageIndex} />
+            <ProductImageGallery product={product} selectedColor={selectedColor} onImageChange={setSelectedImageIndex} />
           </div>
 
           {/* Product Info */}

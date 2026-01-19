@@ -118,3 +118,29 @@ a, button {
 .animate-scaleIn {
   animation: scaleIn 0.25s ease-out forwards;
 }
+
+/* Marquee animation - seamless infinite scroll */
+@keyframes marquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 600s linear infinite;
+  display: flex;
+  will-change: transform;
+  width: max-content;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Prevent animation restart glitch on mobile */
+@media (max-width: 768px) {
+  .animate-marquee {
+    animation-duration: 480s;
+  }
+}

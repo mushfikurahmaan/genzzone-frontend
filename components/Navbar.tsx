@@ -221,9 +221,24 @@ export function Navbar() {
 
       {/* Notification Bar */}
       {notification && (
-        <div className="bg-black text-white py-2">
-          <div className="container mx-auto px-4 text-center">
-            <p className="text-xs md:text-sm">{notification.message}</p>
+        <div className="bg-black text-white py-2 overflow-hidden relative w-full">
+          <div className="flex animate-marquee whitespace-nowrap">
+            {/* First set of marquee items */}
+            <div className="flex items-center flex-shrink-0">
+              {Array.from({ length: 100 }).map((_, i) => (
+                <span key={`first-${i}`} className="text-xs md:text-sm uppercase font-medium mx-6 inline-block flex-shrink-0">
+                  {notification.message}
+                </span>
+              ))}
+            </div>
+            {/* Duplicate set for seamless loop */}
+            <div className="flex items-center flex-shrink-0" aria-hidden="true">
+              {Array.from({ length: 100 }).map((_, i) => (
+                <span key={`second-${i}`} className="text-xs md:text-sm uppercase font-medium mx-6 inline-block flex-shrink-0">
+                  {notification.message}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       )}

@@ -10,8 +10,8 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-white border-t-2 border-red-600">
-      <div className="container mx-auto px-4 py-12">
+    <footer className="bg-white border-t-2 border-red-600 pb-24 md:pb-12">
+      <div className="container mx-auto px-4 pt-12 pb-4 md:pb-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Logo & Contact Info */}
           <div>
