@@ -213,7 +213,7 @@ export function generateOrderPDF(data: OrderPDFData): void {
   yPos += 6;
   addCenteredText('For any queries, please contact us.', yPos, 10);
   yPos += 6;
-  addCenteredText('www.genzzone.com', yPos, 10);
+  addCenteredText('+880 1604-112279', yPos, 10);
 
   // Save the PDF
   doc.save(`GenZZone_Order_${data.orderId}.pdf`);

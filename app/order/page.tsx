@@ -287,6 +287,13 @@ function OrderPageContent() {
     fetchAvailableProducts();
   }, [showProductSelector]);
 
+  // Scroll to top when success screen is shown
+  useEffect(() => {
+    if (success) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [success]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
