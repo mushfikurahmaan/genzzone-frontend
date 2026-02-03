@@ -96,6 +96,16 @@ export interface Notification {
   updated_at: string;
 }
 
+export interface HeroImage {
+  id: number;
+  image: string;
+  title: string;
+  subtitle: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 // Helper function to convert relative image URLs to absolute URLs
 export function getImageUrl(imageUrl: string | null): string | null {
   if (!imageUrl) return null;
@@ -151,6 +161,19 @@ export const notificationApi = {
       return response.data.is_active ? response.data : null;
     } catch (error) {
       console.error('Error fetching notification:', error);
+      return null;
+    }
+  },
+};
+
+// API Functions - Hero Image
+export const heroImageApi = {
+  getActive: async (): Promise<HeroImage | null> => {
+    try {
+      const response = await api.get<HeroImage | null>('/api/hero-image/active/');
+      return response.data ?? null;
+    } catch (error) {
+      console.error('Error fetching hero image:', error);
       return null;
     }
   },
@@ -253,6 +276,24 @@ export const cartApi = {
 
   clear: async (): Promise<void> => {
     await api.delete('/api/cart/');
+  },
+};
+
+// Tracking codes (e.g. Meta Pixel) - for frontend script injection
+export interface TrackingCodeItem {
+  id: number;
+  script_id: string;
+  name: string;
+  script_content: string;
+  noscript_content: string;
+  placement: 'head' | 'body';
+  order: number;
+}
+
+export const trackingApi = {
+  getActive: async (): Promise<TrackingCodeItem[]> => {
+    const response = await api.get<TrackingCodeItem[]>('/api/tracking-codes/');
+    return response.data;
   },
 };
 
