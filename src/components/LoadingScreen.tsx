@@ -30,10 +30,9 @@ export function LoadingScreen() {
   if (!isLoading) return null;
 
   return (
-    <div className="fixed inset-0 bg-white bg-opacity-95 z-[9999] flex items-center justify-center backdrop-blur-sm transition-opacity duration-300">
+    <div className="loading-overlay">
       <div className="flex flex-col items-center gap-4">
-        {/* DaisyUI Spinner */}
-        <span className="loading loading-spinner loading-lg"></span>
+        <span className="loading loading-spinner loading-lg" />
         <p className="text-sm text-gray-600 font-medium">Loading...</p>
       </div>
     </div>

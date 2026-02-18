@@ -40,12 +40,12 @@ export function CategorySidebar() {
 
   if (isLoading) {
     return (
-      <aside className="hidden lg:block w-64 bg-white border-r border-gray-200 sticky top-0 self-start h-screen overflow-y-auto scrollbar-hide" style={{ paddingTop: '80px' }}>
+      <aside className="sidebar sidebar-with-nav scrollbar-hide">
         <div className="p-4">
-          <h2 className="text-lg font-bold text-red-600 mb-4 uppercase">Category</h2>
+          <h2 className="sidebar-title">Category</h2>
           <div className="space-y-2">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-10 bg-gray-100 rounded animate-pulse" />
+              <div key={i} className="sidebar-skeleton" />
             ))}
           </div>
         </div>
@@ -54,18 +54,18 @@ export function CategorySidebar() {
   }
 
   return (
-    <aside className="hidden lg:block w-64 bg-white border-r border-gray-200 sticky top-0 self-start h-screen overflow-y-auto scrollbar-hide" style={{ paddingTop: '80px' }}>
+    <aside className="sidebar sidebar-with-nav scrollbar-hide">
       <div className="p-4">
-        <h2 className="text-lg font-bold text-red-600 mb-4 uppercase">Category</h2>
+        <h2 className="sidebar-title">Category</h2>
         <nav className="space-y-1">
           {categories.map((category) => (
             <div key={category.id}>
               {category.children.length > 0 ? (
                 <>
-                  <div className="flex items-center justify-between gap-3 px-3 py-2 text-sm hover:bg-gray-100 rounded transition-colors">
+                  <div className="sidebar-item">
                     <Link
                       href={`/products?category=${category.slug}`}
-                      className="flex items-center gap-3 flex-1"
+                      className="sidebar-item-link"
                     >
                       <span className="text-gray-600 flex-shrink-0">
                         <Tag className="w-5 h-5" />
@@ -89,7 +89,7 @@ export function CategorySidebar() {
                         <Link
                           key={child.id}
                           href={`/products?category=${child.slug}`}
-                          className="flex items-center gap-3 px-3 py-2 pl-8 text-sm text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                          className="sidebar-item-link flex pl-8 py-2 text-gray-600"
                         >
                           <span className="text-gray-600 flex-shrink-0">
                             <Tag className="w-5 h-5" />
@@ -103,7 +103,7 @@ export function CategorySidebar() {
               ) : (
                 <Link
                   href={`/products?category=${category.slug}`}
-                  className="flex items-center gap-3 px-3 py-2 text-sm text-black hover:bg-gray-100 rounded transition-colors"
+                  className="sidebar-item-link"
                 >
                   <span className="text-gray-600 flex-shrink-0">
                     <Tag className="w-5 h-5" />

@@ -176,20 +176,16 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
   });
 
   const SearchInput = useMemo(() => (
-    <form onSubmit={handleSubmit} className={`relative ${isMobile ? 'w-full' : 'w-full'}`}>
-      <div className={`relative w-full flex items-center ${
-        isMobile ? 'bg-white rounded-md px-3 py-2' : 'bg-gray-100 rounded-md border border-gray-300'
-      }`}>
+    <form onSubmit={handleSubmit} className="relative w-full">
+      <div className={isMobile ? 'search-input-wrap-mobile' : 'search-input-wrap-desktop'}>
         <input
           ref={searchInputRef}
           type="text"
           value={searchQuery}
           onChange={handleSearchChange}
           onFocus={(e) => {
-            // Store current scroll position
             const currentScroll = window.pageYOffset;
             handleInputFocus();
-            // Restore scroll position if it changed
             requestAnimationFrame(() => {
               if (window.pageYOffset !== currentScroll) {
                 window.scrollTo({ top: currentScroll, behavior: 'instant' });
@@ -198,24 +194,16 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
           }}
           onBlur={handleInputBlur}
           placeholder={placeholder}
-          className={`flex-1 bg-transparent focus:outline-none text-black placeholder-gray-500 ${
-            isMobile ? 'text-xs' : 'px-4 py-2 text-sm'
-          }`}
+          className={`search-input-base ${isMobile ? 'search-input-mobile ml-0' : 'search-input-desktop'}`}
         />
-        
-        {/* Camera Button */}
         <button
           type="button"
-          className={`p-1 opacity-30 cursor-not-allowed pointer-events-none ${
-            isMobile ? 'ml-2 rounded-md bg-white' : 'hover:bg-gray-200 rounded-r-md'
-          }`}
+          className="disabled-muted p-1 ml-2 rounded-md"
           aria-label="Search by image"
           disabled
         >
           <Camera className="w-5 h-5 text-gray-600" />
         </button>
-
-        {/* Search Button - Desktop only */}
         {!isMobile && (
           <button
             type="submit"
@@ -225,23 +213,16 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
             <Search className="w-5 h-5 text-gray-600" />
           </button>
         )}
-        
-        {/* Clear Button */}
         {searchQuery && (
           <button
             type="button"
-            onMouseDown={(e) => {
-              e.preventDefault(); // Prevent input blur
-            }}
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => {
               setSearchQuery('');
               setSearchResults([]);
               setShowDropdown(false);
               setHasSearched(false);
-              // Keep focus on input after clearing
-              setTimeout(() => {
-                searchInputRef.current?.focus({ preventScroll: true });
-              }, 0);
+              setTimeout(() => searchInputRef.current?.focus({ preventScroll: true }), 0);
             }}
             className="p-1 hover:bg-gray-200 rounded-md ml-1"
             aria-label="Clear search"
@@ -257,21 +238,19 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
     if (!showDropdown) return null;
 
     return (
-      <div 
+      <div
         ref={dropdownRef}
-        className={`absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-96 overflow-y-auto ${
-          isMobile ? 'mt-2' : 'mt-1'
-        }`}
+        className={`search-dropdown ${isMobile ? 'search-dropdown-mobile' : 'search-dropdown-desktop'}`}
       >
         {isLoading ? (
-          <div className="p-4 text-center text-gray-500">
+          <div className="search-loading">
             <div className="flex items-center justify-center gap-2">
-              <div className="w-4 h-4 border-2 border-gray-300 border-t-black rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
               Searching...
             </div>
           </div>
         ) : hasSearched && searchResults.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
+          <div className="search-empty">
             <div className="mb-2">No products found</div>
             <div className="text-sm text-gray-400">Try searching with different keywords</div>
           </div>
@@ -281,14 +260,12 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
               {searchResults.slice(0, 8).map((product) => (
                 <button
                   key={product.id}
-                  onMouseDown={(e) => {
-                    e.preventDefault(); // Prevent input blur
-                  }}
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => handleResultClick(product.id)}
-                  className="w-full p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 text-left transition-colors"
+                  className="search-result-item"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-200 rounded-md overflow-hidden flex-shrink-0">
+                    <div className="search-result-thumb">
                       {getImageUrl(product.image) ? (
                         <Image
                           src={getImageUrl(product.image)!}
@@ -300,7 +277,7 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-                          <span className="text-gray-500 text-xs">No Image</span>
+                          <span className="product-card-placeholder-text">No Image</span>
                         </div>
                       )}
                     </div>
@@ -336,11 +313,9 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
             {/* View All Results Button */}
             {searchResults.length > 0 && (
               <button
-                onMouseDown={(e) => {
-                  e.preventDefault(); // Prevent input blur
-                }}
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={handleViewAllResults}
-                className="w-full p-3 bg-gray-50 hover:bg-gray-100 text-center text-sm font-medium text-black border-t border-gray-200 transition-colors"
+                className="search-view-all"
               >
                 View all {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} →
               </button>
@@ -352,7 +327,7 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
   };
 
   return (
-    <div className="relative w-full">
+    <div className="search-wrap">
       {SearchInput}
       <SearchDropdownResults />
     </div>

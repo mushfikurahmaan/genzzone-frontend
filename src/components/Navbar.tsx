@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Search, ShoppingBag, Menu, X, Camera, Heart, User, ChevronRight, ChevronDown } from 'lucide-react';
+import { Search, ShoppingBag, X, Camera, Heart, User, ChevronRight, ChevronDown } from 'lucide-react';
 import { notificationApi, categoryApi, Notification, Category } from '@/lib/api';
 import { SearchDropdown } from './SearchDropdown';
 
@@ -102,10 +102,10 @@ export function Navbar() {
 
 
   return (
-    <nav className="bg-white sticky top-0 z-50 border-b border-gray-200">
-      {/* Mobile Search Bar */}
-      <div className="md:hidden bg-black">
-        <div className="container mx-auto px-4 py-3">
+    <nav className="nav">
+      {/* Mobile Search Bar - only on mobile */}
+      <div className="nav-mobile-search block md:hidden">
+        <div className="container-main py-3">
           <SearchDropdown 
             isMobile={true} 
             placeholder={placeholders[placeholderIndex]}
@@ -114,14 +114,14 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Desktop Top Bar with Logo, Search, and Icons */}
-      <div className="hidden md:block border-b border-gray-200">
-        <div className="container mx-auto px-4 py-3">
+      {/* Desktop Top Bar with Logo, Search, and Icons - only on desktop */}
+      <div className="nav-desktop-bar hidden md:block">
+        <div className="container-main py-3">
           <div className="flex items-center gap-4">
             {/* Logo */}
-            <Link 
-              href="/" 
-              className="flex items-center gap-2 flex-shrink-0" 
+            <Link
+              href="/"
+              className="nav-logo-link"
               onClick={closeMobileMenu}
             >
               <div className="flex items-center gap-2">
@@ -130,11 +130,11 @@ export function Navbar() {
                   alt="GenZZone Logo"
                   width={120}
                   height={120}
-                  className="w-10 h-10 rounded-full object-cover"
+                  className="nav-logo-img"
                 />
                 <div className="flex flex-col">
-                  <span className="text-xl font-extrabold text-red-600 leading-tight" style={{ fontFamily: 'var(--font-funnel-sans)' }}>GEN-Z</span>
-                  <span className="text-xl font-extrabold text-black leading-tight" style={{ fontFamily: 'var(--font-funnel-sans)' }}>ZONE</span>
+                  <span className="logo-gen">GEN-Z</span>
+                  <span className="logo-zone">ZONE</span>
                 </div>
               </div>
             </Link>
@@ -151,13 +151,13 @@ export function Navbar() {
 
             {/* Right Icons */}
             <div className="flex items-center gap-3 flex-shrink-0">
-              <div className="relative p-2 opacity-30 cursor-not-allowed pointer-events-none">
+              <div className="nav-icon-btn-disabled">
                 <ShoppingBag className="w-5 h-5 text-black" />
               </div>
-              <Link href="/wishlist" className="relative p-2 hover:bg-gray-100 rounded">
+              <Link href="/wishlist" className="nav-icon-btn">
                 <Heart className="w-5 h-5 text-black" />
               </Link>
-              <div className="relative p-2 opacity-30 cursor-not-allowed pointer-events-none">
+              <div className="nav-icon-btn-disabled">
                 <User className="w-5 h-5 text-black" />
               </div>
             </div>
@@ -167,7 +167,7 @@ export function Navbar() {
 
       {/* Notification Bar */}
       {notification && (
-        <div className="bg-black text-white py-2 overflow-hidden relative w-full">
+        <div className="nav-notification-bar">
           <div className="flex animate-marquee whitespace-nowrap">
             {/* First set of marquee items */}
             <div className="flex items-center flex-shrink-0">
@@ -191,17 +191,12 @@ export function Navbar() {
 
       {/* Desktop Navigation Bar */}
       <div className="hidden md:block bg-white">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container-main py-4">
           <div className="flex items-center justify-center gap-8">
-            <Link href="/" className="text-sm font-medium text-black hover:underline">
-              Home
-            </Link>
-            <div className="relative group">
-              <button className="text-sm font-medium text-black hover:underline">
-                Categories
-              </button>
-              {/* Dropdown Menu */}
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+            <Link href="/" className="nav-link">Home</Link>
+            <div className="relative nav-dropdown-group">
+              <button className="nav-link">Categories</button>
+              <div className="nav-dropdown">
                 <div className="py-2">
                   {categories.map((category) => (
                     <div key={category.id}>
@@ -231,7 +226,7 @@ export function Navbar() {
                                 <Link
                                   key={child.id}
                                   href={`/products?category=${child.slug}`}
-                                  className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 pl-6"
+                                  className="nav-dropdown-subitem"
                                 >
                                   {child.name}
                                 </Link>
@@ -242,7 +237,7 @@ export function Navbar() {
                       ) : (
                         <Link
                           href={`/products?category=${category.slug}`}
-                          className="block px-4 py-2 text-sm text-black hover:bg-gray-100"
+                          className="nav-dropdown-item"
                         >
                           {category.name}
                         </Link>
@@ -252,39 +247,28 @@ export function Navbar() {
                 </div>
               </div>
             </div>
-            <Link href="/customer-reviews" className="text-sm font-medium text-black hover:underline">
-              Customer Reviews
-            </Link>
+            <Link href="/customer-reviews" className="nav-link">Customer Reviews</Link>
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu Overlay - only on mobile */}
       {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-          onClick={closeMobileMenu}
-        />
+        <div className="nav-mobile-overlay md:hidden" onClick={closeMobileMenu} />
       )}
 
-      {/* Mobile Navigation Menu */}
+      {/* Mobile Navigation Menu - only on mobile, off-canvas until open */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
-          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`nav-mobile-drawer md:hidden ${isMobileMenuOpen ? 'nav-mobile-drawer-open' : ''}`}
       >
         <div className="flex flex-col h-full">
           {/* Mobile Menu Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <Link 
-              href="/" 
-              className="flex items-center gap-2"
-              onClick={closeMobileMenu}
-            >
+          <div className="nav-mobile-drawer-header">
+            <Link href="/" className="flex items-center gap-2" onClick={closeMobileMenu}>
               <div className="flex flex-col">
-                <span className="text-lg font-extrabold text-red-600 leading-tight" style={{ fontFamily: 'var(--font-funnel-sans)' }}>GEN-Z</span>
-                <span className="text-lg font-extrabold text-red-600 leading-tight" style={{ fontFamily: 'var(--font-funnel-sans)' }}>G</span>
-                <span className="text-lg font-extrabold text-black leading-tight" style={{ fontFamily: 'var(--font-funnel-sans)' }}>ZONE</span>
+                <span className="logo-gen-sm">GEN-Z</span>
+                <span className="logo-gen-sm">G</span>
+                <span className="logo-zone-sm">ZONE</span>
               </div>
             </Link>
             <button
@@ -298,19 +282,13 @@ export function Navbar() {
 
           {/* Mobile Menu Links */}
           <div className="flex flex-col p-4 space-y-2">
-            <Link
-              href="/"
-              className="text-base font-medium text-black hover:underline py-2"
-              onClick={closeMobileMenu}
-            >
+            <Link href="/" className="nav-mobile-link" onClick={closeMobileMenu}>
               Home
             </Link>
-            
-            {/* Categories with Dropdown */}
             <div>
               <button
                 onClick={toggleCategories}
-                className="w-full text-base font-medium text-black hover:underline py-2 text-left"
+                className="w-full nav-mobile-link text-left"
               >
                 Categories
               </button>
@@ -370,17 +348,10 @@ export function Navbar() {
               )}
             </div>
 
-            <Link
-              href="/customer-reviews"
-              className="text-base font-medium text-black hover:underline py-2"
-              onClick={closeMobileMenu}
-            >
+            <Link href="/customer-reviews" className="nav-mobile-link" onClick={closeMobileMenu}>
               Customer Reviews
             </Link>
-            <button
-              onClick={openTrackingModal}
-              className="text-base font-medium text-black hover:underline py-2 text-left"
-            >
+            <button onClick={openTrackingModal} className="nav-mobile-link text-left">
               Track Your Parcel
             </button>
           </div>
@@ -390,19 +361,11 @@ export function Navbar() {
       {/* Tracking Modal */}
       {isTrackingModalOpen && (
         <>
-          {/* Overlay */}
-          <div 
-            className="fixed inset-0 backdrop-blur-sm z-50"
-            onClick={closeTrackingModal}
-          />
-          {/* Modal */}
-          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-            <div 
-              className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
-              onClick={(e) => e.stopPropagation()}
-            >
+          <div className="modal-overlay" onClick={closeTrackingModal} />
+          <div className="modal-dialog">
+            <div className="modal-box" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-black">Track Your Parcel</h2>
+                <h2 className="modal-title">Track Your Parcel</h2>
                 <button
                   onClick={closeTrackingModal}
                   className="text-gray-500 hover:text-black"
@@ -413,7 +376,7 @@ export function Navbar() {
               </div>
               <form onSubmit={handleTrackOrder}>
                 <div className="mb-4">
-                  <label htmlFor="orderId" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="orderId" className="form-label">
                     Enter Order ID
                   </label>
                   <input
@@ -422,22 +385,15 @@ export function Navbar() {
                     value={orderId}
                     onChange={(e) => setOrderId(e.target.value)}
                     placeholder="Enter your order ID"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black text-black"
+                    className="form-input"
                     autoFocus
                   />
                 </div>
                 <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    className="flex-1 bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors"
-                  >
+                  <button type="submit" className="btn-track">
                     Track
                   </button>
-                  <button
-                    type="button"
-                    onClick={closeTrackingModal}
-                    className="flex-1 bg-gray-200 text-black px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
-                  >
+                  <button type="button" onClick={closeTrackingModal} className="btn-cancel">
                     Cancel
                   </button>
                 </div>

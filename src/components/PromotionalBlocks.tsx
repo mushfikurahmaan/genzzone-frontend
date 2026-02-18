@@ -33,8 +33,8 @@ const promotionalBlocks: PromoBlock[] = [
 
 export function PromotionalBlocks() {
   return (
-    <section className="bg-gray-100 py-16">
-      <div className="container mx-auto px-4">
+    <section className="section-alt section-default">
+      <div className="container-main">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {promotionalBlocks.map((block, index) => (
             <Link
@@ -43,9 +43,8 @@ export function PromotionalBlocks() {
               className="group relative overflow-hidden bg-white rounded-lg transition-transform hover:scale-105"
             >
               <div className="aspect-[4/5] bg-gray-200 relative overflow-hidden">
-                {/* Placeholder for product image */}
-                <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-                  <span className="text-gray-500 text-sm">Product Image</span>
+                <div className="product-card-placeholder w-full h-full">
+                  <span className="product-card-placeholder-text">Product Image</span>
                 </div>
               </div>
               <div className="p-4 text-center">

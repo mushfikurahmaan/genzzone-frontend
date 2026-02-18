@@ -71,23 +71,12 @@ export function MobileNavigation() {
 
   return (
     <>
-      {/* Right side floating action buttons (mobile only) */}
       <div className="fixed right-4 bottom-32 flex flex-col gap-3 z-40 md:hidden">
-        {/* Cart - Disabled */}
-        <div
-          className="w-11 h-11 rounded-full bg-black shadow-lg flex items-center justify-center text-white opacity-30 cursor-not-allowed pointer-events-none"
-          aria-label="Go to cart (disabled)"
-        >
+        <div className="mobile-nav-fab-disabled" aria-label="Go to cart (disabled)">
           <ShoppingBag className="w-5 h-5" />
         </div>
-
-        {/* Scroll to Top - only when visible */}
         {isVisible && (
-          <button
-            onClick={scrollToTop}
-            className="w-11 h-11 rounded-full bg-black shadow-lg flex items-center justify-center text-white hover:bg-gray-800 transition-colors"
-            aria-label="Scroll to top"
-          >
+          <button onClick={scrollToTop} className="mobile-nav-fab" aria-label="Scroll to top">
             <ArrowUp className="w-5 h-5" />
           </button>
         )}
@@ -175,53 +164,34 @@ export function MobileNavigation() {
         </div>
       )}
 
-      {/* Bottom mobile nav bar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-black text-white z-40 md:hidden">
+      <nav className="mobile-nav-bar">
         <div className="max-w-screen-sm mx-auto flex items-stretch">
-          {/* 1. Category */}
           <button
             ref={categoryButtonRef}
             onClick={toggleCategoryMenu}
-            className="flex-1 flex flex-col items-center justify-center py-2 text-[11px]"
+            className="mobile-nav-item"
           >
             <Grid2X2 className="w-5 h-5 mb-1" />
             <span>Category</span>
           </button>
-
-          {/* 2. Wishlist */}
-          <Link
-            href="/wishlist"
-            className="flex-1 flex flex-col items-center justify-center py-2 text-[11px]"
-          >
+          <Link href="/wishlist" className="mobile-nav-item">
             <Heart className="w-5 h-5 mb-1" />
             <span>Wishlist</span>
           </Link>
-
-          {/* 3. Home icon in the middle */}
-          <Link
-            href="/"
-            className="flex-1 flex flex-col items-center justify-center py-2 text-[11px]"
-          >
+          <Link href="/" className="mobile-nav-item">
             <Home className="w-5 h-5 mb-1" />
             <span>Home</span>
           </Link>
-
-          {/* 4. Chat */}
           <a
             href="https://wa.me/8801604112279"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 flex flex-col items-center justify-center py-2 text-[11px]"
+            className="mobile-nav-item"
           >
             <MessageCircle className="w-5 h-5 mb-1" />
             <span>Chat</span>
           </a>
-
-          {/* 5. Call */}
-          <a
-            href="tel:+8801604112279"
-            className="flex-1 flex flex-col items-center justify-center py-2 text-[11px]"
-          >
+          <a href="tel:+8801604112279" className="mobile-nav-item">
             <Phone className="w-5 h-5 mb-1" />
             <span>Call</span>
           </a>

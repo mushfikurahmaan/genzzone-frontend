@@ -47,89 +47,25 @@ api.interceptors.response.use(
   }
 );
 
-// Types
-export interface CategoryChild {
-  id: number;
-  name: string;
-  slug: string;
-}
-
-export interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  children: CategoryChild[];
-}
-
-export interface ProductCategory {
-  slug: string;
-  name: string;
-  parent_name: string | null;
-}
-
-export interface ProductColor {
-  id: number;
-  name: string;
-  image: string;
-  order: number;
-  is_active: boolean;
-}
-
-/** One size dimension for a product, e.g. { label: "Shirt Size", options: ["S", "M", "L"] } */
-export interface ProductSizeOption {
-  label: string;
-  options: string[];
-}
-
-export interface Product {
-  id: number;
-  name: string;
-  description: string;
-  category: ProductCategory;
-  category_slug: string; // backward-compatible field
-  regular_price: string;
-  offer_price: string | null;
-  current_price: string;
-  has_offer: boolean;
-  image: string | null;
-  image2: string | null;
-  image3: string | null;
-  image4: string | null;
-  stock: number;
-  is_active: boolean;
-  colors: ProductColor[];
-  /** Size options from backend; default [{"label": "Size", "options": ["One Size"]}] when empty */
-  size_options: ProductSizeOption[];
-  created_at: string;
-  updated_at: string;
-}
-
-export interface BestSelling {
-  id: number;
-  product: Product;
-  order: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Notification {
-  id: number;
-  message: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface HeroImage {
-  id: number;
-  image: string;
-  title: string;
-  subtitle: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+// Re-export shared types from types/api (single source of truth)
+export type {
+  CategoryChild,
+  Category,
+  ProductCategory,
+  ProductColor,
+  ProductSizeOption,
+  Product,
+  BestSelling,
+  Notification,
+  HeroImage,
+} from "@/types/api";
+import type {
+  Product,
+  BestSelling,
+  Category,
+  HeroImage,
+  Notification,
+} from "@/types/api";
 
 // Helper function to convert relative image URLs to absolute URLs
 export function getImageUrl(imageUrl: string | null): string | null {

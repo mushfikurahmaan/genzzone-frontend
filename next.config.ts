@@ -25,6 +25,12 @@ const nextConfig: NextConfig = {
         port: '8000',
         pathname: '/media/**',
       },
+      // Media CDN / static assets (e.g. hero images)
+      {
+        protocol: 'https',
+        hostname: 'media.genzzone.com',
+        pathname: '/**',
+      },
     ],
     unoptimized: false, // Set to true if you want to disable image optimization
   },
