@@ -116,7 +116,7 @@ export function Footer() {
           <p className="w-full text-center">
             © 2026 Gen-Z Zone. All rights reserved. | Developed by{' '}
             <a
-              href="https:mushfikurahmaan.com"
+              href="https://mushfikurahmaan.com"
               target="_blank"
               rel="noopener noreferrer"
               className="footer-credit-link"
