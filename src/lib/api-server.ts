@@ -9,6 +9,7 @@ import type {
   HeroImage,
   Notification,
   Product,
+  TrackingCodeItem,
 } from "@/types/api";
 
 const API_BASE_URL =
@@ -87,6 +88,18 @@ export const serverNotificationApi = {
       return data?.is_active ? data : null;
     } catch {
       return null;
+    }
+  },
+};
+
+export const serverTrackingApi = {
+  getActive: async (): Promise<TrackingCodeItem[]> => {
+    try {
+      return await serverFetch<TrackingCodeItem[]>("/api/tracking-codes/", {
+        next: { revalidate: 300 },
+      });
+    } catch {
+      return [];
     }
   },
 };

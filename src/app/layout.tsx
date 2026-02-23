@@ -8,7 +8,9 @@ import { CartProvider } from "@/contexts/CartContext";
 import { CsrfInitializer } from "@/components/CsrfInitializer";
 import { MobileNavigation } from "@/components/MobileNavigation";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import { TrackingScripts } from "@/components/TrackingScripts";
+import { MetaPixelScripts } from "@/components/TrackingScripts";
+import { PixelPageViewTracker } from "@/components/PixelPageViewTracker";
+import { serverTrackingApi } from "@/lib/api-server";
 
 const funnelSans = Funnel_Sans({
   variable: "--font-funnel-sans",
@@ -35,18 +37,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const trackingCodes = await serverTrackingApi.getActive();
+  const pixelIds = trackingCodes.map((c) => c.pixel_id).filter(Boolean);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${funnelSans.variable} ${spaceGrotesk.variable} antialiased`}
         suppressHydrationWarning
       >
-        <TrackingScripts />
+        <MetaPixelScripts pixelIds={pixelIds} />
+        <PixelPageViewTracker />
         <CsrfInitializer />
         <CartProvider>
           <Suspense fallback={null}>

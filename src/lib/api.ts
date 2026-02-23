@@ -65,6 +65,7 @@ import type {
   Category,
   HeroImage,
   Notification,
+  TrackingCodeItem,
 } from "@/types/api";
 
 // Helper function to convert relative image URLs to absolute URLs
@@ -273,9 +274,7 @@ export const cartApi = {
 };
 
 // Tracking codes (e.g. Meta Pixel) - for frontend script injection
-export interface TrackingCodeItem {
-  pixel_id: string;
-}
+export type { TrackingCodeItem };
 
 export const trackingApi = {
   getActive: async (): Promise<TrackingCodeItem[]> => {
