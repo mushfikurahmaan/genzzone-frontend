@@ -1,7 +1,7 @@
 /**
  * Meta (Facebook) Pixel helpers. Fire standard events only when the corresponding
  * action actually happens (e.g. Purchase only after a completed order).
- * The base pixel is injected via TrackingScripts from the backend; this module
+ * The base pixel is initialised via TrackingScripts from the backend; this module
  * ensures Purchase is sent exactly once per completed order from the frontend.
  */
 
@@ -10,7 +10,8 @@ declare global {
     fbq?: (
       action: string,
       eventName: string,
-      params?: Record<string, unknown>
+      params?: Record<string, unknown>,
+      options?: { eventID?: string }
     ) => void;
   }
 }
@@ -25,13 +26,17 @@ export interface PurchaseParams {
 }
 
 /**
- * Fires Meta Pixel "Purchase" event. Call this only when the user has completed
- * a real purchase (order created successfully). Safe to call if the pixel
- * script is not loaded (no-op).
+ * Fires Meta Pixel "Purchase" event exactly once per completed order.
+ * Generates a unique eventID for each call so the event can be deduplicated
+ * against a server-side Conversions API if one is added in the future.
+ *
+ * Returns the eventID that was used, so it can be forwarded to the backend.
+ * Returns null if the pixel is not loaded (no-op).
  */
-export function trackPurchase(params: PurchaseParams): void {
-  if (typeof window === 'undefined' || !window.fbq) return;
+export function trackPurchase(params: PurchaseParams): string | null {
+  if (typeof window === 'undefined' || !window.fbq) return null;
   try {
+    const eventID = crypto.randomUUID();
     window.fbq('track', 'Purchase', {
       value: params.value,
       currency: params.currency,
@@ -39,8 +44,10 @@ export function trackPurchase(params: PurchaseParams): void {
       content_ids: params.content_ids,
       content_type: params.content_type ?? 'product',
       num_items: params.num_items,
-    });
+    }, { eventID });
+    return eventID;
   } catch {
     // Avoid breaking the app if the pixel throws
+    return null;
   }
 }

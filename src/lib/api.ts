@@ -274,7 +274,7 @@ export const cartApi = {
 
 // Tracking codes (e.g. Meta Pixel) - for frontend script injection
 export interface TrackingCodeItem {
-  script_content: string;
+  pixel_id: string;
 }
 
 export const trackingApi = {

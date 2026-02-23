@@ -482,7 +482,8 @@ function OrderPageContent() {
         }
       }
 
-      // Fire Meta Pixel Purchase only for this completed order (once per real purchase)
+      // Fire Meta Pixel Purchase only for this completed order (once per real purchase).
+      // eventID is returned for future server-side Conversions API deduplication.
       trackPurchase({
         value: getTotalPrice(),
         currency: 'BDT',
