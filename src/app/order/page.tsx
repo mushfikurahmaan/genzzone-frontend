@@ -372,7 +372,7 @@ function OrderPageContent() {
   // Calculate totals
   const getProductTotal = () => {
     return orderItems.reduce((sum, item) => {
-      return sum + (parseFloat(item.product.current_price) * item.quantity);
+      return sum + (item.product.current_price * item.quantity);
     }, 0);
   };
 
@@ -438,7 +438,7 @@ function OrderPageContent() {
     try {
       // Build place-order payload: each product includes product_sizes (label -> value) for backend
       const products: CreateOrderProductItem[] = orderItems.map(item => {
-        const unitPrice = parseFloat(item.product.current_price);
+        const unitPrice = item.product.current_price;
         const itemTotal = unitPrice * item.quantity;
         const product_sizes = { ...item.product_sizes };
         Object.keys(product_sizes).forEach(k => { if (!product_sizes[k]?.trim()) delete product_sizes[k]; });
@@ -572,8 +572,8 @@ function OrderPageContent() {
         size: formatProductSizeDisplay(item.product_sizes),
         color: item.selectedColor?.name || '',
         quantity: item.quantity,
-        unitPrice: parseFloat(item.product.current_price),
-        total: parseFloat(item.product.current_price) * item.quantity,
+        unitPrice: item.product.current_price,
+        total: item.product.current_price * item.quantity,
       })),
       productTotal: completedOrder.productTotal,
       deliveryCharge: completedOrder.deliveryCharge,
@@ -683,11 +683,11 @@ function OrderPageContent() {
                         </div>
                         <div className="text-right flex-shrink-0">
                           <p className="font-semibold text-gray-900">
-                            ৳{(parseFloat(item.product.current_price) * item.quantity).toFixed(0)}
+                            ৳{(item.product.current_price * item.quantity).toFixed(0)}
                           </p>
                           {item.quantity > 1 && (
                             <p className="text-xs text-gray-500">
-                              ৳{parseFloat(item.product.current_price).toFixed(0)} × {item.quantity}
+                              ৳{item.product.current_price.toFixed(0)} × {item.quantity}
                             </p>
                           )}
                         </div>
@@ -813,7 +813,7 @@ function OrderPageContent() {
                                 : item.product.category?.name || item.product.category_slug}
                             </p>
                               <div className="text-base font-normal text-black">
-                                ৳{parseFloat(item.product.current_price).toFixed(0)}.00
+                                ৳{item.product.current_price.toFixed(0)}.00
                               </div>
                             </div>
                             {orderItems.length > 1 && (
@@ -961,7 +961,7 @@ function OrderPageContent() {
                             )}
                           </div>
                           <div className="font-medium text-xs text-black line-clamp-2 leading-tight mb-1">{product.name}</div>
-                          <div className="text-xs text-gray-600 font-semibold">৳{parseFloat(product.current_price).toFixed(0)}.00</div>
+                          <div className="text-xs text-gray-600 font-semibold">৳{product.current_price.toFixed(0)}.00</div>
                         </button>
                       ))}
                     </div>

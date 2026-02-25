@@ -36,10 +36,15 @@ export interface PurchaseParams {
  */
 export function trackPurchase(params: PurchaseParams): string | null {
   if (typeof window === 'undefined' || !window.fbq) return null;
+
+  // Guard: value must be a finite positive number rounded to 2 decimal places.
+  const safeValue = parseFloat(Number(params.value).toFixed(2));
+  if (!isFinite(safeValue) || safeValue <= 0) return null;
+
   try {
     const eventID = crypto.randomUUID();
     window.fbq('track', 'Purchase', {
-      value: params.value,
+      value: safeValue,
       currency: params.currency,
       order_id: String(params.order_id),
       content_ids: params.content_ids,
@@ -48,7 +53,6 @@ export function trackPurchase(params: PurchaseParams): string | null {
     }, { eventID });
     return eventID;
   } catch {
-    // Avoid breaking the app if the pixel throws
     return null;
   }
 }

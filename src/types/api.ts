@@ -40,7 +40,7 @@ export interface Product {
   category_slug: string;
   regular_price: string;
   offer_price: string | null;
-  current_price: string;
+  current_price: number;
   has_offer: boolean;
   image: string | null;
   image2: string | null;
