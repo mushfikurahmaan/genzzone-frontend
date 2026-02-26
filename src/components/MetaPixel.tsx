@@ -1,7 +1,7 @@
 /**
- * Meta Pixel base code for PageView tracking.
- * Loads fbevents.js and fires PageView on initial load.
- * Install on every page via root layout.
+ * Meta Pixel base initialization.
+ * Loads fbevents.js and initializes the pixel. Does NOT fire PageView —
+ * PixelPageViewTracker owns all PageView events (initial + SPA navigations).
  * Pixel ID from NEXT_PUBLIC_META_PIXEL_ID env variable.
  */
 import Script from "next/script";
@@ -20,7 +20,6 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 fbq.disablePushState=true;
 fbq('set','autoConfig',false,'${PIXEL_ID}');
 fbq('init','${PIXEL_ID}');
-fbq('track','PageView');
 `.trim();
 
 export function MetaPixel() {

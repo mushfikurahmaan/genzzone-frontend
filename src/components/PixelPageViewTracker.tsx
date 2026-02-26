@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * Fires Meta Pixel PageView on SPA navigation.
- * Next.js uses client-side routing, so we must track PageView on each route change.
- * Skips initial mount (base pixel already fires PageView) to avoid duplicates.
+ * Fires Meta Pixel PageView on every page including initial load and SPA navigation.
+ * MetaPixel only initializes the pixel; this component owns all PageView firing.
+ * Uses lastFiredPathname ref to prevent Strict Mode double-fire for the same path.
  */
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -16,14 +16,13 @@ declare global {
 
 export function PixelPageViewTracker() {
   const pathname = usePathname();
-  const isFirstRender = useRef(true);
+  const lastFiredPathname = useRef<string | null>(null);
 
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    if (pathname?.startsWith("/order/success")) return;
+    if (!pathname) return;
+    if (pathname.startsWith("/order/success")) return;
+    if (lastFiredPathname.current === pathname) return;
+    lastFiredPathname.current = pathname;
     if (typeof window !== "undefined" && window.fbq) {
       window.fbq("track", "PageView");
     }
