@@ -1,8 +1,15 @@
+"use client";
 /**
  * Meta Pixel base initialization.
  * Loads fbevents.js and initializes the pixel. Does NOT fire PageView —
  * PixelPageViewTracker owns all PageView events (initial + SPA navigations).
  * Pixel ID from NEXT_PUBLIC_META_PIXEL_ID env variable.
+ *
+ * Must be a Client Component so that Next.js Script's internal useEffect
+ * (which injects the inline fbq stub) fires before PixelPageViewTracker's
+ * useEffect. As a Server Component, Next.js processes the afterInteractive
+ * script after React's hydration effects, causing a race where fbq is
+ * undefined when PixelPageViewTracker first tries to fire PageView.
  */
 import Script from "next/script";
 
