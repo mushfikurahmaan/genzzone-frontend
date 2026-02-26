@@ -3,6 +3,12 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Product, ProductColor, getImageUrl } from '@/lib/api';
+
+declare global {
+  interface Window {
+    fbq?: (action: string, eventName: string, params?: Record<string, unknown>, options?: { eventID?: string }) => void;
+  }
+}
 import { CheckCircle, Download, ShoppingBag } from 'lucide-react';
 import Image from 'next/image';
 import { generateOrderPDF, OrderPDFData } from '@/lib/generateOrderPDF';
@@ -45,6 +51,7 @@ export default function OrderSuccessPage() {
   const [data, setData] = useState<StoredCompletedOrder | null>(null);
   const [notFound, setNotFound] = useState(false);
   const loadedRef = useRef(false);
+  const purchaseTrackedRef = useRef(false);
 
   useEffect(() => {
     if (!orderId) {
@@ -66,6 +73,20 @@ export default function OrderSuccessPage() {
       loadedRef.current = true;
       setData(parsed);
       sessionStorage.removeItem(STORAGE_KEY);
+
+      if (!purchaseTrackedRef.current && typeof window !== 'undefined' && window.fbq) {
+        purchaseTrackedRef.current = true;
+        const contentIds = parsed.items.map((i: OrderItem) => String(i.product.id));
+        const numItems = parsed.items.reduce((sum: number, i: OrderItem) => sum + i.quantity, 0);
+        window.fbq('track', 'Purchase', {
+          value: parseFloat(Number(parsed.totalPrice).toFixed(2)),
+          currency: 'BDT',
+          order_id: String(parsed.order.id),
+          content_ids: contentIds,
+          content_type: 'product',
+          num_items: numItems,
+        }, { eventID: `order_${parsed.order.id}` });
+      }
     } catch {
       setNotFound(true);
     }

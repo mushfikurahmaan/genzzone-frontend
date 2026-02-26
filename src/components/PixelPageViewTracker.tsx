@@ -23,6 +23,7 @@ export function PixelPageViewTracker() {
       isFirstRender.current = false;
       return;
     }
+    if (pathname?.startsWith("/order/success")) return;
     if (typeof window !== "undefined" && window.fbq) {
       window.fbq("track", "PageView");
     }
