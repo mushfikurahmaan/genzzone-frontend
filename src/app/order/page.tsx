@@ -453,6 +453,9 @@ function OrderPageContent() {
         };
       });
 
+      const successUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/order/success`
+        : undefined;
       const orderData: CreateMultiProductOrderData = {
         customer_name: formData.customer_name.trim(),
         district: getDistrictForAPI(),
@@ -462,6 +465,7 @@ function OrderPageContent() {
         product_total: parseFloat(getProductTotal().toFixed(2)),
         delivery_charge: getDeliveryCharge(),
         total_price: parseFloat(getTotalPrice().toFixed(2)),
+        event_source_url: successUrl,
       };
 
       // Ensure CSRF cookie is set before POST (in case CsrfInitializer hadn't completed)
@@ -481,17 +485,36 @@ function OrderPageContent() {
         }
       }
 
-      // Store completed order data for success screen
-      setCompletedOrder({
+      // Store completed order data and redirect to success page (unique URL for Purchase tracking)
+      const completedData = {
         order,
         items: [...orderItems],
         productTotal: getProductTotal(),
         deliveryCharge: getDeliveryCharge(),
         totalPrice: getTotalPrice(),
         district: getDistrictForAPI(),
-      });
-
-      setSuccess(true);
+        formData: {
+          customer_name: formData.customer_name.trim(),
+          phone_number: formData.phone_number.trim(),
+          address: formData.address.trim(),
+        },
+      };
+      try {
+        sessionStorage.setItem('genzzone_completed_order', JSON.stringify(completedData));
+      } catch {
+        // Fallback: show success inline if sessionStorage fails
+        setCompletedOrder({
+          order: completedData.order,
+          items: completedData.items,
+          productTotal: completedData.productTotal,
+          deliveryCharge: completedData.deliveryCharge,
+          totalPrice: completedData.totalPrice,
+          district: completedData.district,
+        });
+        setSuccess(true);
+        return;
+      }
+      router.push(`/order/success?orderId=${order.id}`);
     } catch (err: any) {
       const status = err.response?.status;
       const data = err.response?.data;

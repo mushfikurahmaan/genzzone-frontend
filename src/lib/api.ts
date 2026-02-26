@@ -203,6 +203,8 @@ export interface CreateMultiProductOrderData {
   product_total: number;
   delivery_charge: number;
   total_price: number;
+  /** Success page URL for Meta Conversions API event_source_url (uniquely identifies purchase context) */
+  event_source_url?: string;
 }
 
 export interface Order {
