@@ -8,6 +8,8 @@ import { CartProvider } from "@/contexts/CartContext";
 import { CsrfInitializer } from "@/components/CsrfInitializer";
 import { MobileNavigation } from "@/components/MobileNavigation";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { MetaPixel } from "@/components/MetaPixel";
+import { PixelPageViewTracker } from "@/components/PixelPageViewTracker";
 const funnelSans = Funnel_Sans({
   variable: "--font-funnel-sans",
   subsets: ["latin"],
@@ -44,6 +46,8 @@ export default async function RootLayout({
         className={`${funnelSans.variable} ${spaceGrotesk.variable} antialiased`}
         suppressHydrationWarning
       >
+        <MetaPixel />
+        <PixelPageViewTracker />
         <CsrfInitializer />
         <CartProvider>
           <Suspense fallback={null}>

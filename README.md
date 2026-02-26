@@ -43,11 +43,13 @@ npm install
 3. Create a `.env.local` file:
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_META_PIXEL_ID=your-meta-pixel-id
 ```
 
 For production, set this to your Railway backend URL:
 ```env
 NEXT_PUBLIC_API_URL=https://your-backend.railway.app
+NEXT_PUBLIC_META_PIXEL_ID=your-meta-pixel-id
 ```
 
 4. Run the development server:
@@ -103,8 +105,9 @@ All API calls use session-based authentication (cookies) with `withCredentials: 
 2. Connect your repository to Vercel
 3. In Vercel project settings:
    - Set **Root Directory** to `/` (or leave empty)
-   - Add environment variable:
+   - Add environment variables:
      - `NEXT_PUBLIC_API_URL` = `https://your-backend.railway.app`
+     - `NEXT_PUBLIC_META_PIXEL_ID` = your Meta Pixel ID
 4. Deploy!
 
 Vercel will automatically:
@@ -118,6 +121,7 @@ Vercel will automatically:
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `NEXT_PUBLIC_API_URL` | Backend API URL | Yes |
+| `NEXT_PUBLIC_META_PIXEL_ID` | Meta Pixel ID for PageView tracking | No (pixel disabled if unset) |
 
 ## Development
 
