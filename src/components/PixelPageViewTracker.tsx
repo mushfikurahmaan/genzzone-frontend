@@ -10,7 +10,7 @@ import { useEffect, useRef } from "react";
 
 declare global {
   interface Window {
-    fbq?: (action: string, eventName: string) => void;
+    fbq?: (action: string, eventName: string, params?: Record<string, unknown>, options?: { eventID?: string }) => void;
   }
 }
 

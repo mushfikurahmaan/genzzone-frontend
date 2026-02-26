@@ -3,12 +3,6 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Product, ProductColor, getImageUrl } from '@/lib/api';
-
-declare global {
-  interface Window {
-    fbq?: (action: string, eventName: string, params?: Record<string, unknown>, options?: { eventID?: string }) => void;
-  }
-}
 import { CheckCircle, Download, ShoppingBag } from 'lucide-react';
 import Image from 'next/image';
 import { generateOrderPDF, OrderPDFData } from '@/lib/generateOrderPDF';
