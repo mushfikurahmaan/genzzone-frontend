@@ -3,7 +3,6 @@
 import { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Product, ProductColor, ProductSizeOption, productApi, getImageUrl, orderApi, CreateMultiProductOrderData, CreateOrderProductItem, Order, ensureCsrfCookie } from '@/lib/api';
-import { trackPurchase } from '@/lib/pixel';
 import { ArrowLeft, Plus, X, Minus, CheckCircle, Download, ShoppingBag, Eye } from 'lucide-react';
 import Image from 'next/image';
 import { generateOrderPDF, OrderPDFData } from '@/lib/generateOrderPDF';
@@ -481,17 +480,6 @@ function OrderPageContent() {
           throw firstErr;
         }
       }
-
-      // Fire Meta Pixel Purchase only for this completed order (once per real purchase).
-      // eventID is returned for future server-side Conversions API deduplication.
-      trackPurchase({
-        value: getTotalPrice(),
-        currency: 'BDT',
-        order_id: order.id,
-        content_ids: orderItems.map((item) => String(item.product.id)),
-        content_type: 'product',
-        num_items: orderItems.reduce((sum, item) => sum + item.quantity, 0),
-      });
 
       // Store completed order data for success screen
       setCompletedOrder({
