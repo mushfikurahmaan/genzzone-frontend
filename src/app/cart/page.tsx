@@ -75,12 +75,12 @@ export default function CartPage() {
             >
               {/* Product Image */}
               <Link
-                href={`/products/${item.product.id}`}
+                href={`/products/${encodeURIComponent(item.product.slug)}`}
                 className="relative w-full md:w-32 h-48 md:h-32 bg-gray-200 rounded overflow-hidden flex-shrink-0"
               >
-                {getImageUrl(item.product.image) ? (
+                {getImageUrl(item.product.image_url) ? (
                   <Image
-                    src={getImageUrl(item.product.image)!}
+                    src={getImageUrl(item.product.image_url)!}
                     alt={item.product.name}
                     fill
                     className="object-cover"
@@ -97,29 +97,31 @@ export default function CartPage() {
               <div className="flex-1 flex flex-col justify-between">
                 <div>
                   <Link
-                    href={`/products/${item.product.id}`}
+                    href={`/products/${encodeURIComponent(item.product.slug)}`}
                     className="text-lg font-semibold text-black hover:underline mb-2 block"
                   >
                     {item.product.name}
                   </Link>
                   <div className="text-sm text-gray-600 mb-2">
-                    {item.product.has_offer && item.product.offer_price ? (
+                    {item.product.original_price &&
+                    parseFloat(item.product.original_price) >
+                      parseFloat(item.product.price) ? (
                       <div className="flex items-center gap-2">
                         <span className="text-gray-500 line-through">
-                          ৳{parseFloat(item.product.regular_price).toFixed(0)}.00
+                          ৳{parseFloat(item.product.original_price).toFixed(0)}.00
                         </span>
                         <span className="font-normal text-black">
-                          ৳{parseFloat(item.product.offer_price).toFixed(0)}.00
+                          ৳{parseFloat(item.product.price).toFixed(0)}.00
                         </span>
                       </div>
                     ) : (
                       <span className="font-normal text-black">
-                        ৳{parseFloat(item.product.regular_price).toFixed(0)}.00
+                        ৳{parseFloat(item.product.price).toFixed(0)}.00
                       </span>
                     )}
                   </div>
                   <div className="text-xs text-gray-500">
-                    Stock: {item.product.stock} available
+                    Available: {item.product.available_quantity}
                   </div>
                 </div>
 
@@ -138,7 +140,10 @@ export default function CartPage() {
                     </span>
                     <button
                       onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                      disabled={updating === item.id || item.quantity >= item.product.stock}
+                      disabled={
+                        updating === item.id ||
+                        item.quantity >= item.product.available_quantity
+                      }
                       className="w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Plus className="w-4 h-4" />

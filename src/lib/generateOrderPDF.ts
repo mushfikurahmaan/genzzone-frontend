@@ -3,7 +3,8 @@
 import { jsPDF } from 'jspdf';
 
 export interface OrderPDFData {
-  orderId: number;
+  /** Human-readable order number from storefront receipt */
+  orderNumber: string;
   orderDate: string;
   customerName: string;
   phoneNumber: string;
@@ -12,8 +13,7 @@ export interface OrderPDFData {
   paymentMethod: string;
   items: {
     name: string;
-    size: string;
-    color: string | null;
+    variantDetails: string;
     quantity: number;
     unitPrice: number;
     total: number;
@@ -28,20 +28,17 @@ export function generateOrderPDF(data: OrderPDFData): void {
   const pageWidth = doc.internal.pageSize.getWidth();
   let yPos = 20;
 
-  // Helper function to add centered text
   const addCenteredText = (text: string, y: number, fontSize: number = 12) => {
     doc.setFontSize(fontSize);
     const textWidth = doc.getTextWidth(text);
     doc.text(text, (pageWidth - textWidth) / 2, y);
   };
 
-  // Helper function to add a horizontal line
   const addLine = (y: number) => {
     doc.setDrawColor(200, 200, 200);
     doc.line(20, y, pageWidth - 20, y);
   };
 
-  // Header - Company Name
   doc.setFont('helvetica', 'bold');
   addCenteredText('GenZ Zone', yPos, 24);
   yPos += 8;
@@ -54,7 +51,6 @@ export function generateOrderPDF(data: OrderPDFData): void {
   addLine(yPos);
   yPos += 10;
 
-  // Order Information Section
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.text('Order Information', 20, yPos);
@@ -62,9 +58,9 @@ export function generateOrderPDF(data: OrderPDFData): void {
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(11);
-  
+
   const orderInfo = [
-    ['Order ID:', `#${data.orderId}`],
+    ['Order #:', data.orderNumber],
     ['Order Date:', formatDate(data.orderDate)],
     ['Payment Method:', data.paymentMethod],
   ];
@@ -81,7 +77,6 @@ export function generateOrderPDF(data: OrderPDFData): void {
   addLine(yPos);
   yPos += 10;
 
-  // Customer Information Section
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.text('Customer Information', 20, yPos);
@@ -89,11 +84,11 @@ export function generateOrderPDF(data: OrderPDFData): void {
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(11);
-  
+
   const customerInfo = [
     ['Name:', data.customerName],
     ['Phone:', data.phoneNumber],
-    ['District:', data.district],
+    ['Shipping:', data.district],
     ['Address:', ''],
   ];
 
@@ -107,7 +102,6 @@ export function generateOrderPDF(data: OrderPDFData): void {
     yPos += 7;
   });
 
-  // Handle long address with word wrap
   const addressLines = doc.splitTextToSize(data.address, pageWidth - 90);
   doc.text(addressLines, 70, yPos - 7);
   yPos += (addressLines.length - 1) * 5;
@@ -116,31 +110,26 @@ export function generateOrderPDF(data: OrderPDFData): void {
   addLine(yPos);
   yPos += 10;
 
-  // Order Items Section
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.text('Order Items', 20, yPos);
   yPos += 10;
 
-  // Table Header
   doc.setFillColor(240, 240, 240);
   doc.rect(20, yPos - 5, pageWidth - 40, 8, 'F');
-  
+
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.text('Item', 22, yPos);
-  doc.text('Size', 70, yPos);
-  doc.text('Color', 90, yPos);
+  doc.text('Variant', 70, yPos);
   doc.text('Qty', 120, yPos);
   doc.text('Price', 138, yPos);
   doc.text('Total', 165, yPos);
   yPos += 8;
 
-  // Table Rows
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   data.items.forEach((item) => {
-    // Truncate long product names
     const maxNameWidth = 45;
     let displayName = item.name;
     if (doc.getTextWidth(displayName) > maxNameWidth) {
@@ -150,25 +139,22 @@ export function generateOrderPDF(data: OrderPDFData): void {
       displayName += '...';
     }
 
-    // Truncate long color names
-    const maxColorWidth = 25;
-    let displayColor = item.color || '-';
-    if (doc.getTextWidth(displayColor) > maxColorWidth) {
-      while (doc.getTextWidth(displayColor + '...') > maxColorWidth && displayColor.length > 0) {
-        displayColor = displayColor.slice(0, -1);
+    let displayVar = item.variantDetails || '-';
+    const maxVarWidth = 25;
+    if (doc.getTextWidth(displayVar) > maxVarWidth) {
+      while (doc.getTextWidth(displayVar + '...') > maxVarWidth && displayVar.length > 0) {
+        displayVar = displayVar.slice(0, -1);
       }
-      displayColor += '...';
+      displayVar += '...';
     }
 
     doc.text(displayName, 22, yPos);
-    doc.text(item.size, 70, yPos);
-    doc.text(displayColor, 90, yPos);
+    doc.text(displayVar, 70, yPos);
     doc.text(item.quantity.toString(), 120, yPos);
     doc.text(formatCurrency(item.unitPrice), 138, yPos);
     doc.text(formatCurrency(item.total), 165, yPos);
     yPos += 7;
 
-    // Check if we need a new page
     if (yPos > 260) {
       doc.addPage();
       yPos = 20;
@@ -179,21 +165,16 @@ export function generateOrderPDF(data: OrderPDFData): void {
   addLine(yPos);
   yPos += 10;
 
-  // Price Summary Section
   doc.setFontSize(11);
-  
-  // Subtotal
   doc.setFont('helvetica', 'normal');
   doc.text('Subtotal:', 115, yPos);
   doc.text(formatCurrency(data.productTotal), 160, yPos);
   yPos += 7;
 
-  // Delivery Charge
-  doc.text('Delivery Charge:', 115, yPos);
+  doc.text('Delivery / Shipping:', 115, yPos);
   doc.text(formatCurrency(data.deliveryCharge), 160, yPos);
   yPos += 7;
 
-  // Total Amount
   addLine(yPos);
   yPos += 7;
   doc.setFont('helvetica', 'bold');
@@ -202,7 +183,6 @@ export function generateOrderPDF(data: OrderPDFData): void {
   doc.text(formatCurrency(data.totalAmount), 160, yPos);
   yPos += 15;
 
-  // Footer
   addLine(yPos);
   yPos += 10;
 
@@ -212,15 +192,14 @@ export function generateOrderPDF(data: OrderPDFData): void {
   addCenteredText('Thank you for shopping with GenZ Zone!', yPos, 11);
   yPos += 6;
   addCenteredText('For any queries, please contact us.', yPos, 10);
-  yPos += 6;
-  addCenteredText('+880 1604-112279', yPos, 10);
 
-  // Save the PDF
-  doc.save(`GenZZone_Order_${data.orderId}.pdf`);
+  const safeFile = data.orderNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
+  doc.save(`GenZZone_Order_${safeFile}.pdf`);
 }
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return dateString;
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',

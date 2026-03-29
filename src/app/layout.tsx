@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import type { StorePublic } from "@/types/akkho";
 import { Funnel_Sans, Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { serverStoreApi } from "@/lib/api-server";
 import { CartProvider } from "@/contexts/CartContext";
-import { CsrfInitializer } from "@/components/CsrfInitializer";
 import { MobileNavigation } from "@/components/MobileNavigation";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { MetaPixel } from "@/components/MetaPixel";
@@ -40,6 +41,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let storePublic: StorePublic | null = null;
+  try {
+    storePublic = await serverStoreApi.getPublic();
+  } catch {
+    // Missing key / API down: footer omits contact rows from dashboard
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -48,7 +56,6 @@ export default async function RootLayout({
       >
         <MetaPixel />
         <PixelPageViewTracker />
-        <CsrfInitializer />
         <CartProvider>
           <Suspense fallback={null}>
             <LoadingScreen />
@@ -57,7 +64,7 @@ export default async function RootLayout({
           <main className="min-h-screen">
             {children}
           </main>
-          <Footer />
+          <Footer storePublic={storePublic} />
           <MobileNavigation />
         </CartProvider>
       </body>

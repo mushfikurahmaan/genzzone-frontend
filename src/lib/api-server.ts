@@ -1,29 +1,65 @@
 /**
- * Server-only API helpers using native fetch.
- * Use in Server Components for data fetching (smaller bundle, better caching).
+ * Server-only Akkho Storefront API (native fetch).
  */
 
 import type {
-  BestSelling,
-  Category,
-  HeroImage,
-  Notification,
-  Product,
-} from "@/types/api";
+  StorefrontProductList,
+  StorefrontProductDetail,
+  StorefrontCategory,
+  PaginatedProducts,
+  StorefrontBanner,
+  StorefrontNotification,
+  UnifiedSearchResponse,
+  StorePublic,
+} from "@/types/akkho";
+import { normalizeStorefrontList } from "@/lib/storefrontResponse";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.genzzone.com";
+const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+).replace(/\/$/, "");
+const PUBLISHABLE_KEY =
+  process.env.NEXT_PUBLIC_AKKHO_PUBLISHABLE_KEY || "";
 
-async function serverFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const url = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
-  const res = await fetch(url, {
-    ...options,
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    next: { revalidate: 60 },
+function storefrontUrl(path: string): string {
+  const p = path.startsWith("/") ? path : `/${path}`;
+  return `${API_BASE_URL}/api/v1${p}`;
+}
+
+type ServerFetchInit = RequestInit & {
+  /**
+   * Next.js Data Cache TTL (seconds). Default 60 for catalog/search.
+   * Use 0 for CMS-driven content (banners, notifications) so dashboard edits show on the next request.
+   */
+  revalidate?: number;
+};
+
+async function serverFetch<T>(
+  path: string,
+  options?: ServerFetchInit
+): Promise<T> {
+  const { revalidate = 60, headers: userHeaders, ...rest } = options ?? {};
+  const res = await fetch(storefrontUrl(path), {
+    ...rest,
+    headers: {
+      Authorization: `Bearer ${PUBLISHABLE_KEY}`,
+      "Content-Type": "application/json",
+      ...userHeaders,
+    },
+    next: { revalidate },
   });
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API ${res.status}: ${text.slice(0, 200)}`);
+  }
   return res.json() as Promise<T>;
 }
+
+export const serverStoreApi = {
+  /** Branding, contact, policies — `GET /api/v1/store/public/` */
+  getPublic: async (): Promise<StorePublic> => {
+    return serverFetch<StorePublic>("/store/public/", { revalidate: 0 });
+  },
+};
 
 /** Absolute image URL for server-rendered images */
 export function getServerImageUrl(imageUrl: string | null): string | null {
@@ -35,43 +71,71 @@ export function getServerImageUrl(imageUrl: string | null): string | null {
 }
 
 export const serverProductApi = {
-  getAll: async (search?: string, category?: string): Promise<Product[]> => {
-    const params = new URLSearchParams();
-    if (search) params.set("search", search);
-    if (category) params.set("category", category);
-    const q = params.toString();
-    const data = await serverFetch<{ results?: Product[] }>(
-      `/api/products/${q ? `?${q}` : ""}`
-    );
-    return data.results ?? (data as unknown as Product[]);
+  getPage: async (params?: {
+    page?: number;
+    search?: string;
+    category?: string;
+    ordering?: string;
+  }): Promise<PaginatedProducts> => {
+    const sp = new URLSearchParams();
+    if (params?.page) sp.set("page", String(params.page));
+    if (params?.search) sp.set("search", params.search);
+    if (params?.category) sp.set("category", params.category);
+    if (params?.ordering) sp.set("ordering", params.ordering);
+    const q = sp.toString();
+    return serverFetch<PaginatedProducts>(`/products/${q ? `?${q}` : ""}`);
   },
-  getById: async (id: number): Promise<Product> => {
-    return serverFetch(`/api/products/${id}/`);
-  },
-};
 
-export const serverBestSellingApi = {
-  getAll: async (): Promise<BestSelling[]> => {
-    const data = await serverFetch<{ results?: BestSelling[] }>(
-      "/api/best-selling/"
-    );
-    return data.results ?? (data as unknown as BestSelling[]);
+  getAll: async (
+    search?: string,
+    category?: string
+  ): Promise<StorefrontProductList[]> => {
+    const data = await serverProductApi.getPage({
+      page: 1,
+      search,
+      category,
+    });
+    return data.results;
+  },
+
+  getByIdentifier: async (
+    identifier: string
+  ): Promise<StorefrontProductDetail> => {
+    const enc = encodeURIComponent(identifier);
+    return serverFetch<StorefrontProductDetail>(`/products/${enc}/`);
   },
 };
 
 export const serverCategoryApi = {
-  getTree: async (): Promise<Category[]> => {
-    return serverFetch("/api/categories/tree/");
+  getTree: async (): Promise<StorefrontCategory[]> => {
+    const data = await serverFetch<unknown>("/categories/?tree=1");
+    return normalizeStorefrontList<StorefrontCategory>(data);
   },
 };
 
-export const serverHeroImageApi = {
-  getActive: async (): Promise<HeroImage | null> => {
+export const serverSearchApi = {
+  trendingProducts: async (): Promise<StorefrontProductList[]> => {
+    const data = await serverFetch<UnifiedSearchResponse>(
+      "/search/?trending=1"
+    );
+    return data.products ?? [];
+  },
+};
+
+export const serverBannerApi = {
+  getAll: async (): Promise<StorefrontBanner[]> => {
+    const data = await serverFetch<unknown>("/banners/", { revalidate: 0 });
+    return normalizeStorefrontList<StorefrontBanner>(data);
+  },
+
+  /** First ordered banner with an image, else first banner (for text-only hero). */
+  getHeroBanner: async (): Promise<StorefrontBanner | null> => {
     try {
-      const data = await serverFetch<{ is_active?: boolean } & HeroImage>(
-        "/api/hero-image/active/"
-      );
-      return data?.is_active ? data : null;
+      const list = await serverBannerApi.getAll();
+      if (!list.length) return null;
+      const sorted = [...list].sort((a, b) => a.order - b.order);
+      const withImage = sorted.find((b) => b.image_url?.trim());
+      return withImage ?? sorted[0] ?? null;
     } catch {
       return null;
     }
@@ -79,14 +143,14 @@ export const serverHeroImageApi = {
 };
 
 export const serverNotificationApi = {
-  getActive: async (): Promise<Notification | null> => {
+  getActive: async (): Promise<StorefrontNotification[]> => {
     try {
-      const data = await serverFetch<{ is_active?: boolean } & Notification>(
-        "/api/notifications/active/"
-      );
-      return data?.is_active ? data : null;
+      const data = await serverFetch<unknown>("/notifications/active/", {
+        revalidate: 0,
+      });
+      return normalizeStorefrontList<StorefrontNotification>(data);
     } catch {
-      return null;
+      return [];
     }
   },
 };

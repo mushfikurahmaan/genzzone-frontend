@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  serverProductApi,
-  serverBestSellingApi,
-} from "@/lib/api-server";
+import { serverProductApi, serverSearchApi } from "@/lib/api-server";
 import { ProductCard } from "@/components/ProductCard";
 
 export const metadata: Metadata = {
@@ -38,7 +35,7 @@ function getSubtitle(
   isBestSelling: boolean
 ) {
   if (search) return null;
-  if (isBestSelling) return "Discover Our Most Popular Premium T-Shirts";
+  if (isBestSelling) return "Discover our most popular items";
   if (category === "men") return "Discover our premium men's collection";
   if (category === "men_shirt") return "Discover our premium men's shirts";
   if (category === "men_panjabi") return "Discover our premium men's panjabi";
@@ -49,7 +46,12 @@ function getSubtitle(
 }
 
 interface PageProps {
-  searchParams: Promise<{ category?: string; search?: string; best_selling?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    search?: string;
+    best_selling?: string;
+    page?: string;
+  }>;
 }
 
 export default async function ProductsPage({ searchParams }: PageProps) {
@@ -57,18 +59,109 @@ export default async function ProductsPage({ searchParams }: PageProps) {
   const category = params.category ?? null;
   const search = params.search ?? null;
   const isBestSelling = params.best_selling === "true";
+  const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
 
-  let products: Awaited<ReturnType<typeof serverProductApi.getAll>>;
   try {
+    let list;
     if (isBestSelling) {
-      const bestSelling = await serverBestSellingApi.getAll();
-      products = bestSelling.map((item) => item.product);
+      const products = await serverSearchApi.trendingProducts();
+      list = {
+        count: products.length,
+        next: null,
+        previous: null,
+        results: products,
+      };
     } else {
-      products = await serverProductApi.getAll(
-        search ?? undefined,
-        category ?? undefined
-      );
+      list = await serverProductApi.getPage({
+        page,
+        search: search ?? undefined,
+        category: category ?? undefined,
+      });
     }
+
+    const title = getCategoryTitle(category, search, isBestSelling);
+    const subtitle = getSubtitle(category, search, isBestSelling);
+    const totalPages = Math.max(1, Math.ceil(list.count / 24));
+    const hasPrev = !!list.previous;
+    const hasNext = !!list.next;
+
+    const q = new URLSearchParams();
+    if (category) q.set("category", category);
+    if (search) q.set("search", search);
+    if (isBestSelling) q.set("best_selling", "true");
+
+    const pageLink = (p: number) => {
+      const qp = new URLSearchParams(q);
+      if (p > 1) qp.set("page", String(p));
+      const s = qp.toString();
+      return s ? `/products?${s}` : "/products";
+    };
+
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="container mx-auto px-4 py-16">
+          <header className="mb-12 text-center">
+            <h1 className="section-title font-heading">{title}</h1>
+            {subtitle && (
+              <p className="text-lg text-muted-foreground">{subtitle}</p>
+            )}
+          </header>
+
+          {list.results.length === 0 ? (
+            <div className="empty-state">
+              {search
+                ? `No products found matching "${search}". Try a different search term.`
+                : isBestSelling
+                  ? "No best selling products available"
+                  : category
+                    ? `No ${category} products available`
+                    : "No products available"}
+              {search && (
+                <Link href="/products" className="btn-outline mt-4 inline-block">
+                  View All Products
+                </Link>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="product-grid">
+                {list.results.map((product) => (
+                  <ProductCard key={product.public_id} product={product} />
+                ))}
+              </div>
+              {!isBestSelling && totalPages > 1 && (
+                <nav
+                  className="mt-12 flex flex-wrap items-center justify-center gap-4"
+                  aria-label="Pagination"
+                >
+                  {hasPrev ? (
+                    <Link href={pageLink(page - 1)} className="btn-outline">
+                      Previous
+                    </Link>
+                  ) : (
+                    <span className="btn-outline opacity-50 pointer-events-none">
+                      Previous
+                    </span>
+                  )}
+                  <span className="text-sm text-muted-foreground">
+                    Page {page} of {totalPages}
+                  </span>
+                  {hasNext ? (
+                    <Link href={pageLink(page + 1)} className="btn-outline">
+                      Next
+                    </Link>
+                  ) : (
+                    <span className="btn-outline opacity-50 pointer-events-none">
+                      Next
+                    </span>
+                  )}
+                </nav>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    );
   } catch {
     return (
       <div className="min-h-screen bg-white">
@@ -78,43 +171,4 @@ export default async function ProductsPage({ searchParams }: PageProps) {
       </div>
     );
   }
-
-  const title = getCategoryTitle(category, search, isBestSelling);
-  const subtitle = getSubtitle(category, search, isBestSelling);
-
-  return (
-    <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 py-16">
-        <header className="mb-12 text-center">
-          <h1 className="section-title font-heading">{title}</h1>
-          {subtitle && (
-            <p className="text-lg text-muted-foreground">{subtitle}</p>
-          )}
-        </header>
-
-        {products.length === 0 ? (
-          <div className="empty-state">
-            {search
-              ? `No products found matching "${search}". Try a different search term.`
-              : isBestSelling
-                ? "No best selling products available"
-                : category
-                  ? `No ${category} products available`
-                  : "No products available"}
-            {search && (
-              <Link href="/products" className="btn-outline mt-4 inline-block">
-                View All Products
-              </Link>
-            )}
-          </div>
-        ) : (
-          <div className="product-grid">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
 }

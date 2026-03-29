@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Search, Camera, X } from 'lucide-react';
-import { Product, productApi, getImageUrl } from '@/lib/api';
+import type { StorefrontProductList } from '@/types/akkho';
+import { searchApi, getImageUrl } from '@/lib/api';
 
 interface SearchDropdownProps {
   isMobile?: boolean;
@@ -13,13 +14,17 @@ interface SearchDropdownProps {
   onClose?: () => void;
 }
 
+function parsePrice(s: string): number {
+  const n = parseFloat(s);
+  return Number.isFinite(n) ? n : 0;
+}
+
 export function SearchDropdown({ isMobile = false, placeholder = "Search products...", onClose }: SearchDropdownProps) {
   const router = useRouter();
   
-  // Store scroll position to prevent unwanted scrolling
   const scrollPositionRef = useRef<number>(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [searchResults, setSearchResults] = useState<StorefrontProductList[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -28,9 +33,9 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
   const debounceTimer = useRef<NodeJS.Timeout | undefined>(undefined);
   const [isFocused, setIsFocused] = useState(false);
 
-  // Debounced search function
   const performSearch = async (query: string) => {
-    if (!query.trim()) {
+    const q = query.trim();
+    if (!q || q.length < 2) {
       setSearchResults([]);
       setShowDropdown(false);
       setHasSearched(false);
@@ -41,8 +46,8 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
     setHasSearched(true);
     
     try {
-      const results = await productApi.getAll(query.trim());
-      setSearchResults(results);
+      const data = await searchApi.unified(q);
+      setSearchResults(data.products ?? []);
       setShowDropdown(true);
     } catch (error) {
       console.error('Search error:', error);
@@ -53,28 +58,23 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
     }
   };
 
-  // Handle search input changes with debouncing
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
 
-    // Keep dropdown open when there's a query and input is focused
     if (query.trim()) {
       setShowDropdown(true);
     }
 
-    // Clear existing timer
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
 
-    // Set new timer for debounced search
     debounceTimer.current = setTimeout(() => {
       performSearch(query);
-    }, 300); // 300ms delay
-  }, []); // Remove isFocused dependency to prevent re-renders
+    }, 300);
+  }, []);
 
-  // Handle input focus
   const handleInputFocus = useCallback(() => {
     setIsFocused(true);
     if (searchQuery.trim() && searchResults.length > 0) {
@@ -82,15 +82,12 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
     }
   }, [searchQuery, searchResults.length]);
 
-  // Handle input blur
   const handleInputBlur = useCallback(() => {
-    // Delay blur to allow click on dropdown items
     setTimeout(() => {
       setIsFocused(false);
     }, 150);
   }, []);
 
-  // Handle form submission
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -100,14 +97,12 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
     }
   }, [searchQuery, router, onClose]);
 
-  // Handle clicking on a search result
-  const handleResultClick = useCallback((productId: number) => {
-    router.push(`/products/${productId}`);
+  const handleResultClick = useCallback((slug: string) => {
+    router.push(`/products/${encodeURIComponent(slug)}`);
     setShowDropdown(false);
     onClose?.();
   }, [router, onClose]);
 
-  // Handle "View All Results" click
   const handleViewAllResults = useCallback(() => {
     if (searchQuery.trim()) {
       router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`, { scroll: false });
@@ -116,7 +111,6 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
     }
   }, [searchQuery, router, onClose]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -134,20 +128,16 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Focus input on mobile when component mounts
   useEffect(() => {
     if (isMobile && searchInputRef.current) {
-      // Prevent scroll when focusing
       const currentScrollPosition = window.pageYOffset;
       searchInputRef.current.focus({ preventScroll: true });
-      // Restore scroll position if it changed
       if (window.pageYOffset !== currentScrollPosition) {
         window.scrollTo(0, currentScrollPosition);
       }
     }
   }, [isMobile]);
 
-  // Clean up timer on unmount
   useEffect(() => {
     return () => {
       if (debounceTimer.current) {
@@ -156,12 +146,10 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
     };
   }, []);
 
-  // Prevent scroll changes during component updates (e.g., placeholder changes)
   useEffect(() => {
     scrollPositionRef.current = window.pageYOffset;
   });
 
-  // Restore scroll position if it changes unexpectedly
   useEffect(() => {
     const preserveScroll = () => {
       const currentScroll = window.pageYOffset;
@@ -170,7 +158,6 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
       }
     };
 
-    // Check scroll position after render
     const timeoutId = setTimeout(preserveScroll, 0);
     return () => clearTimeout(timeoutId);
   });
@@ -232,7 +219,7 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
         )}
       </div>
     </form>
-  ), [searchQuery, placeholder, isMobile, handleInputFocus, handleInputBlur]);
+  ), [searchQuery, placeholder, isMobile, handleInputFocus, handleInputBlur, handleSubmit]);
 
   const SearchDropdownResults = () => {
     if (!showDropdown) return null;
@@ -249,26 +236,34 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
               Searching...
             </div>
           </div>
-        ) : hasSearched && searchResults.length === 0 ? (
+        ) : hasSearched && searchQuery.trim().length >= 2 && searchResults.length === 0 ? (
           <div className="search-empty">
             <div className="mb-2">No products found</div>
             <div className="text-sm text-gray-400">Try searching with different keywords</div>
           </div>
+        ) : searchQuery.trim().length > 0 && searchQuery.trim().length < 2 ? (
+          <div className="search-empty text-sm text-gray-500 px-4 py-3">
+            Type at least 2 characters to search
+          </div>
         ) : searchResults.length > 0 ? (
           <>
             <div className="max-h-80 overflow-y-auto">
-              {searchResults.slice(0, 8).map((product) => (
+              {searchResults.slice(0, 8).map((product) => {
+                const price = parsePrice(product.price);
+                const orig = product.original_price ? parsePrice(product.original_price) : null;
+                const hasDisc = orig != null && orig > price;
+                return (
                 <button
-                  key={product.id}
+                  key={product.public_id}
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => handleResultClick(product.id)}
+                  onClick={() => handleResultClick(product.slug)}
                   className="search-result-item"
                 >
                   <div className="flex items-center gap-3">
                     <div className="search-result-thumb">
-                      {getImageUrl(product.image) ? (
+                      {getImageUrl(product.image_url) ? (
                         <Image
-                          src={getImageUrl(product.image)!}
+                          src={getImageUrl(product.image_url)!}
                           alt={product.name}
                           width={48}
                           height={48}
@@ -286,38 +281,38 @@ export function SearchDropdown({ isMobile = false, placeholder = "Search product
                         {product.name}
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
-                        {product.category?.name || 'Category'}
+                        {product.category_name || 'Category'}
                       </div>
                       <div className="flex items-center gap-2 mt-1">
-                        {product.has_offer && product.offer_price ? (
+                        {hasDisc ? (
                           <>
                             <span className="text-sm font-medium text-black">
-                              ৳{parseFloat(product.offer_price).toFixed(0)}
+                              ৳{price.toFixed(0)}
                             </span>
                             <span className="text-xs text-gray-500 line-through">
-                              ৳{parseFloat(product.regular_price).toFixed(0)}
+                              ৳{orig!.toFixed(0)}
                             </span>
                           </>
                         ) : (
                           <span className="text-sm font-medium text-black">
-                            ৳{parseFloat(product.regular_price).toFixed(0)}
+                            ৳{price.toFixed(0)}
                           </span>
                         )}
                       </div>
                     </div>
                   </div>
                 </button>
-              ))}
+              );
+              })}
             </div>
             
-            {/* View All Results Button */}
             {searchResults.length > 0 && (
               <button
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={handleViewAllResults}
                 className="search-view-all"
               >
-                View all {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} →
+                View all results →
               </button>
             )}
           </>

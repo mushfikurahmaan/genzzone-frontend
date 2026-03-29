@@ -32,7 +32,7 @@ export function ProductSection({
         <>
           <div className="product-grid">
             {displayed.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.public_id} product={product} />
             ))}
           </div>
           {hasMore && (

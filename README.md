@@ -89,15 +89,13 @@ genzzone-frontend/
 
 ## API Integration
 
-The frontend communicates with the Django backend through RESTful APIs:
+The storefront uses the **Akkho Storefront API** (`/api/v1/...`) with a **publishable** key (`ak_pk_…`). See [docs/AKKHO_STOREFRONT_API.md](docs/AKKHO_STOREFRONT_API.md).
 
-- **Products**: `GET /api/products/`, `GET /api/products/{id}/`
-- **Best Selling**: `GET /api/best-selling/`
-- **Notifications**: `GET /api/notifications/active/`
-- **Cart**: `GET /api/cart/`, `POST /api/cart/add/`, `PUT /api/cart/items/{id}/`, `DELETE /api/cart/items/{id}/remove/`
-- **Orders**: `POST /api/orders/create/`
+- **Products**: `GET /api/v1/products/`, `GET /api/v1/products/{slug-or-prd_id}/`
+- **Trending**: `GET /api/v1/search/?trending=1`
+- **Banners / notifications / categories / shipping / orders** as documented for storefront clients
 
-All API calls use session-based authentication (cookies) with `withCredentials: true`.
+Cart sync with the server is not part of the storefront API; the in-app cart context remains a stub until you add a client-side cart if needed.
 
 ## Deployment to Vercel
 
@@ -106,7 +104,8 @@ All API calls use session-based authentication (cookies) with `withCredentials: 
 3. In Vercel project settings:
    - Set **Root Directory** to `/` (or leave empty)
    - Add environment variables:
-     - `NEXT_PUBLIC_API_URL` = `https://your-backend.railway.app`
+     - `NEXT_PUBLIC_API_URL` = `https://your-akkho-api-origin` (no `/api/v1` suffix)
+     - `NEXT_PUBLIC_AKKHO_PUBLISHABLE_KEY` = `ak_pk_…`
      - `NEXT_PUBLIC_META_PIXEL_ID` = your Meta Pixel ID
 4. Deploy!
 
@@ -120,7 +119,8 @@ Vercel will automatically:
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `NEXT_PUBLIC_API_URL` | Backend API URL | Yes |
+| `NEXT_PUBLIC_API_URL` | Akkho API origin (e.g. `https://api.example.com`) | Yes |
+| `NEXT_PUBLIC_AKKHO_PUBLISHABLE_KEY` | Storefront publishable key `ak_pk_…` | Yes |
 | `NEXT_PUBLIC_META_PIXEL_ID` | Meta Pixel ID for PageView tracking | No (pixel disabled if unset) |
 
 ## Development
@@ -142,13 +142,9 @@ The production build will be in the `.next` directory.
 
 ## Configuration
 
-### API URL Configuration
+### API URL and storefront key
 
-The API URL is configured in:
-- `lib/api.ts` - Base API configuration
-- `next.config.ts` - Image remote patterns for product images
-
-Update `NEXT_PUBLIC_API_URL` environment variable to point to your backend.
+Configured in `src/lib/api.ts`, `src/lib/api-server.ts`, and `next.config.ts` (image host). Set `NEXT_PUBLIC_API_URL` to your Akkho API origin and `NEXT_PUBLIC_AKKHO_PUBLISHABLE_KEY` to the store’s `ak_pk_…` key.
 
 ### Image Configuration
 

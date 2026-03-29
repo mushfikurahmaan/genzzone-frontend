@@ -1,9 +1,12 @@
 import Link from "next/link";
-import type { BestSelling, HeroImage, Product } from "@/types/api";
+import type {
+  StorefrontProductList,
+  StorefrontBanner,
+} from "@/types/akkho";
 import {
-  serverBestSellingApi,
   serverProductApi,
-  serverHeroImageApi,
+  serverSearchApi,
+  serverBannerApi,
   getServerImageUrl,
 } from "@/lib/api-server";
 import { Hero } from "@/components/Hero";
@@ -42,59 +45,58 @@ const SECTIONS = [
 ] as const;
 
 export default async function Home() {
-  let bestSelling: BestSelling[] = [];
-  let heroImage: HeroImage | null = null;
-  let combo: Product[] = [];
-  let couple: Product[] = [];
-  let mens: Product[] = [];
-  let womens: Product[] = [];
+  let trending: StorefrontProductList[] = [];
+  let heroBanner: StorefrontBanner | null = null;
+  let combo: StorefrontProductList[] = [];
+  let couple: StorefrontProductList[] = [];
+  let mens: StorefrontProductList[] = [];
+  let womens: StorefrontProductList[] = [];
 
-  try {
-    const [bestSellingRes, heroImageRes, comboRes, coupleRes, mensRes, womensRes] =
-      await Promise.all([
-        serverBestSellingApi.getAll(),
-        serverHeroImageApi.getActive(),
-        serverProductApi.getAll(undefined, "combo"),
-        serverProductApi.getAll(undefined, "couple"),
-        serverProductApi.getAll(undefined, "men"),
-        serverProductApi.getAll(undefined, "womens"),
-      ]);
-    bestSelling = bestSellingRes;
-    heroImage = heroImageRes;
-    combo = comboRes;
-    couple = coupleRes;
-    mens = mensRes;
-    womens = womensRes;
-  } catch (_) {
-    // API unreachable or error: render page with empty sections
-  }
+  // Isolate fetches: one failure (e.g. trending) must not drop banners / hero.
+  const results = await Promise.allSettled([
+    serverSearchApi.trendingProducts(),
+    serverBannerApi.getHeroBanner(),
+    serverProductApi.getAll(undefined, "combo"),
+    serverProductApi.getAll(undefined, "couple"),
+    serverProductApi.getAll(undefined, "men"),
+    serverProductApi.getAll(undefined, "womens"),
+  ]);
 
-  const bestSellingProducts = bestSelling.map((item) => item.product);
-  const heroUrl = heroImage?.image
-    ? getServerImageUrl(heroImage.image)
+  if (results[0].status === "fulfilled") trending = results[0].value;
+  if (results[1].status === "fulfilled") heroBanner = results[1].value;
+  if (results[2].status === "fulfilled") combo = results[2].value;
+  if (results[3].status === "fulfilled") couple = results[3].value;
+  if (results[4].status === "fulfilled") mens = results[4].value;
+  if (results[5].status === "fulfilled") womens = results[5].value;
+
+  const heroImageUrl = heroBanner?.image_url
+    ? getServerImageUrl(heroBanner.image_url)
     : null;
 
   return (
     <div className="min-h-screen bg-white">
-      <Hero imageUrl={heroUrl} alt="Hero banner" />
+      <Hero imageUrl={heroImageUrl} banner={heroBanner} alt="Hero banner" />
 
       <section className="container-main section-default">
         <div className="mb-12 text-center">
           <h2 className="section-title font-heading">Trending Products</h2>
           <p className="section-subtitle">Discover our most popular items</p>
         </div>
-        {bestSellingProducts.length === 0 ? (
-          <div className="empty-state">No best selling products available</div>
+        {trending.length === 0 ? (
+          <div className="empty-state">No trending products available</div>
         ) : (
           <>
             <div className="product-grid">
-              {bestSellingProducts.slice(0, 8).map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {trending.slice(0, 8).map((product) => (
+                <ProductCard key={product.public_id} product={product} />
               ))}
             </div>
-            {bestSellingProducts.length > 8 && (
+            {trending.length > 8 && (
               <div className="view-more-wrap">
-                <Link href="/products?best_selling=true" className="btn-outline inline-block">
+                <Link
+                  href="/products?best_selling=true"
+                  className="btn-outline inline-block"
+                >
                   View More
                 </Link>
               </div>
@@ -103,7 +105,7 @@ export default async function Home() {
         )}
       </section>
 
-      {SECTIONS.map(({ key, title, subtitle, viewMoreHref }, i) => {
+      {SECTIONS.map(({ key, title, subtitle, viewMoreHref }) => {
         const products =
           key === "combo"
             ? combo

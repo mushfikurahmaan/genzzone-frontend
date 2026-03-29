@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
         protocol: apiUrl.protocol.replace(':', '') as 'http' | 'https',
         hostname: apiUrl.hostname,
         ...(apiUrl.port && { port: apiUrl.port }),
-        pathname: '/media/**',
+        pathname: '/**',
       },
       // Keep localhost for development
       {

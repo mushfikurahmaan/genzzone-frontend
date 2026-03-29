@@ -1,13 +1,121 @@
 'use client';
 
-import { Mail, Phone, MapPin } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
+  Instagram,
+  Twitter,
+  Youtube,
+  Linkedin,
+  Music2,
+  Pin,
+  Globe,
+} from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import type { StorePublic, StorePublicSocialLinks } from '@/types/akkho';
 
-export function Footer() {
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+function formatHeadOffice(s: StorePublic): string | null {
+  const addr = s.address?.trim();
+  const ctry = s.country?.trim();
+  if (addr && ctry) return `${addr}, ${ctry}`;
+  return addr || ctry || null;
+}
+
+function telHref(phone: string): string {
+  const digits = phone.replace(/[^\d+]/g, '');
+  return digits.startsWith('+') ? `tel:${digits}` : `tel:${digits}`;
+}
+
+const SOCIAL_ORDER = [
+  'facebook',
+  'instagram',
+  'twitter',
+  'youtube',
+  'tiktok',
+  'linkedin',
+  'pinterest',
+  'website',
+] as const satisfies readonly (keyof StorePublicSocialLinks)[];
+
+const SOCIAL_ICONS: Record<
+  (typeof SOCIAL_ORDER)[number],
+  LucideIcon
+> = {
+  facebook: Facebook,
+  instagram: Instagram,
+  twitter: Twitter,
+  youtube: Youtube,
+  tiktok: Music2,
+  linkedin: Linkedin,
+  pinterest: Pin,
+  website: Globe,
+};
+
+const SOCIAL_LABELS: Record<(typeof SOCIAL_ORDER)[number], string> = {
+  facebook: 'Facebook',
+  instagram: 'Instagram',
+  twitter: 'Twitter',
+  youtube: 'YouTube',
+  tiktok: 'TikTok',
+  linkedin: 'LinkedIn',
+  pinterest: 'Pinterest',
+  website: 'Website',
+};
+
+function normalizeExternalUrl(url: string): string {
+  const t = url.trim();
+  if (/^https?:\/\//i.test(t)) return t;
+  return `https://${t}`;
+}
+
+/** Safe href: internal path, or http(s) only (dashboard-controlled). */
+function resolveSocialHref(url: string): { href: string; external: boolean } | null {
+  const t = url.trim();
+  if (!t) return null;
+  if (t.startsWith('/') && !t.startsWith('//')) {
+    return { href: t, external: false };
+  }
+  const href = normalizeExternalUrl(t);
+  if (!/^https?:\/\//i.test(href)) return null;
+  return { href, external: true };
+}
+
+function getSocialEntries(
+  links: StorePublic['social_links']
+): { key: (typeof SOCIAL_ORDER)[number]; href: string; external: boolean; Icon: LucideIcon; label: string }[] {
+  if (!links || typeof links !== 'object') return [];
+  const out: {
+    key: (typeof SOCIAL_ORDER)[number];
+    href: string;
+    external: boolean;
+    Icon: LucideIcon;
+    label: string;
+  }[] = [];
+  for (const key of SOCIAL_ORDER) {
+    const raw = (links as Record<string, unknown>)[key];
+    const url = typeof raw === 'string' ? raw.trim() : '';
+    if (!url) continue;
+    const resolved = resolveSocialHref(url);
+    if (!resolved) continue;
+    out.push({
+      key,
+      ...resolved,
+      Icon: SOCIAL_ICONS[key],
+      label: SOCIAL_LABELS[key],
+    });
+  }
+  return out;
+}
+
+export function Footer({ storePublic }: { storePublic?: StorePublic | null }) {
+  const headOffice = storePublic ? formatHeadOffice(storePublic) : null;
+  const email = storePublic?.support_email?.trim() || null;
+  const phone = storePublic?.phone?.trim() || null;
+  const socialEntries = getSocialEntries(storePublic?.social_links);
 
   return (
     <footer className="footer">
@@ -29,27 +137,47 @@ export function Footer() {
               </div>
             </div>
             <div className="footer-contact-wrap">
-              <div className="footer-contact-item">
-                <MapPin className="footer-contact-icon" />
-                <div>
-                  <span className="font-semibold">HEAD OFFICE:</span>
-                  <p className="mt-1">Dhaka - Bangladesh</p>
+              {headOffice ? (
+                <div className="footer-contact-item">
+                  <MapPin className="footer-contact-icon" />
+                  <div>
+                    <span className="font-semibold">HEAD OFFICE:</span>
+                    <p className="mt-1 whitespace-pre-line">{headOffice}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="footer-contact-item">
-                <Mail className="footer-contact-icon" />
-                <div>
-                  <span className="font-semibold">EMAIL:</span>
-                  <p className="mt-1">genzzone11@gmail.com</p>
+              ) : null}
+              {email ? (
+                <div className="footer-contact-item">
+                  <Mail className="footer-contact-icon" />
+                  <div>
+                    <span className="font-semibold">EMAIL:</span>
+                    <p className="mt-1">
+                      <a
+                        href={`mailto:${email}`}
+                        className="footer-link underline-offset-2 hover:underline"
+                      >
+                        {email}
+                      </a>
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="footer-contact-item">
-                <Phone className="footer-contact-icon" />
-                <div>
-                  <span className="font-semibold">PHONE:</span>
-                  <p className="mt-1">+8801604112279</p>
+              ) : null}
+              {phone ? (
+                <div className="footer-contact-item">
+                  <Phone className="footer-contact-icon" />
+                  <div>
+                    <span className="font-semibold">PHONE:</span>
+                    <p className="mt-1">
+                      <a
+                        href={telHref(phone)}
+                        className="footer-link underline-offset-2 hover:underline"
+                      >
+                        {phone}
+                      </a>
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ) : null}
             </div>
           </div>
 
@@ -76,40 +204,37 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Social Links */}
-          <div>
-            <h3 className="footer-heading">SOCIAL LINKS</h3>
-            <div className="flex items-center gap-4">
-              <Link
-                href="https://www.facebook.com/genzzone1"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="social-link"
-              >
-                <Image
-                  src="/media/social-icons/facebook.png"
-                  alt="Facebook"
-                  width={40}
-                  height={40}
-                  className="w-full h-full object-contain"
-                />
-              </Link>
-              <Link
-                href="https://www.tiktok.com/@genzzone11"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="social-link"
-              >
-                <Image
-                  src="/media/social-icons/tiktok.png"
-                  alt="TikTok"
-                  width={40}
-                  height={40}
-                  className="w-full h-full object-contain"
-                />
-              </Link>
+          {/* Social Links — from `store/public` → social_links */}
+          {socialEntries.length > 0 ? (
+            <div>
+              <h3 className="footer-heading">SOCIAL LINKS</h3>
+              <div className="flex flex-wrap items-center gap-4">
+                {socialEntries.map(({ key, href, external, Icon, label }) =>
+                  external ? (
+                    <a
+                      key={key}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="social-link text-foreground"
+                      aria-label={label}
+                    >
+                      <Icon className="w-5 h-5" aria-hidden />
+                    </a>
+                  ) : (
+                    <Link
+                      key={key}
+                      href={href}
+                      className="social-link text-foreground"
+                      aria-label={label}
+                    >
+                      <Icon className="w-5 h-5" aria-hidden />
+                    </Link>
+                  )
+                )}
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
 
         <div className="footer-credit">
@@ -129,4 +254,3 @@ export function Footer() {
     </footer>
   );
 }
-

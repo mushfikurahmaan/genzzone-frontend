@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Fragment, useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Search, ShoppingBag, X, Camera, Heart, User, ChevronRight, ChevronDown } from 'lucide-react';
-import { notificationApi, categoryApi, Notification, Category } from '@/lib/api';
+import { notificationApi, categoryApi, type Notification, type Category } from '@/lib/api';
 import { SearchDropdown } from './SearchDropdown';
 
 const placeholders = [
@@ -13,23 +13,86 @@ const placeholders = [
   'SEARCH BY CATEGORY',
 ];
 
+type MarqueeItem = { text: string; url: string | null };
+
+function NavNotificationCtaLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  const t = href.trim();
+  const isInternal = t.startsWith('/') && !t.startsWith('//');
+  if (isInternal) {
+    return (
+      <Link href={t} className="nav-notification-link" prefetch={false}>
+        {children}
+      </Link>
+    );
+  }
+  const openInNewTab = /^https?:\/\//i.test(t);
+  return (
+    <a
+      href={t}
+      className="nav-notification-link"
+      {...(openInNewTab
+        ? { target: '_blank', rel: 'noopener noreferrer' }
+        : {})}
+    >
+      {children}
+    </a>
+  );
+}
+
+function NotificationMarqueeRow({ items }: { items: MarqueeItem[] }) {
+  return (
+    <>
+      {items.map((item, i) => (
+        <Fragment key={i}>
+          {i > 0 ? (
+            <span className="mx-2 opacity-90" aria-hidden={true}>
+              ·
+            </span>
+          ) : null}
+          {item.url ? (
+            <NavNotificationCtaLink href={item.url}>{item.text}</NavNotificationCtaLink>
+          ) : (
+            <span>{item.text}</span>
+          )}
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
 export function Navbar() {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false);
   const [orderId, setOrderId] = useState('');
-  const [notification, setNotification] = useState<Notification | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({});
   const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     async function fetchNotification() {
-      const activeNotification = await notificationApi.getActive();
-      setNotification(activeNotification);
+      const list = await notificationApi.getActive();
+      setNotifications(list);
     }
     fetchNotification();
+    // Notifications were only loaded once; refetch when the tab is focused so dashboard edits show up.
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void fetchNotification();
+    };
+    window.addEventListener("focus", fetchNotification);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("focus", fetchNotification);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   useEffect(() => {
@@ -51,6 +114,27 @@ export function Navbar() {
 
     return () => clearInterval(interval);
   }, []);
+
+  /** Text + optional `cta_url` from dashboard (internal path or external URL). */
+  const notificationMarqueeItems = useMemo((): MarqueeItem[] => {
+    return notifications
+      .map((n) => {
+        const text = [n.cta_text, n.cta_label]
+          .map((s) => String(s || '').trim())
+          .filter(Boolean)
+          .join(' — ');
+        const url = n.cta_url?.trim() || null;
+        if (text && url) return { text, url };
+        if (text) return { text, url: null };
+        if (url)
+          return {
+            text: String(n.cta_label || 'View offer').trim(),
+            url,
+          };
+        return null;
+      })
+      .filter((x): x is MarqueeItem => x != null && x.text.length > 0);
+  }, [notifications]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -165,23 +249,27 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Notification Bar */}
-      {notification && (
+      {/* Notification Bar — each item links when `cta_url` is set */}
+      {notificationMarqueeItems.length > 0 && (
         <div className="nav-notification-bar">
           <div className="flex animate-marquee whitespace-nowrap">
-            {/* First set of marquee items */}
             <div className="flex items-center flex-shrink-0">
               {Array.from({ length: 100 }).map((_, i) => (
-                <span key={`first-${i}`} className="text-xs md:text-sm uppercase font-medium mx-6 inline-block flex-shrink-0">
-                  {notification.message}
+                <span
+                  key={`first-${i}`}
+                  className="text-xs md:text-sm uppercase font-medium mx-6 inline-flex flex-shrink-0 items-center"
+                >
+                  <NotificationMarqueeRow items={notificationMarqueeItems} />
                 </span>
               ))}
             </div>
-            {/* Duplicate set for seamless loop */}
             <div className="flex items-center flex-shrink-0" aria-hidden="true">
               {Array.from({ length: 100 }).map((_, i) => (
-                <span key={`second-${i}`} className="text-xs md:text-sm uppercase font-medium mx-6 inline-block flex-shrink-0">
-                  {notification.message}
+                <span
+                  key={`second-${i}`}
+                  className="text-xs md:text-sm uppercase font-medium mx-6 inline-flex flex-shrink-0 items-center"
+                >
+                  <NotificationMarqueeRow items={notificationMarqueeItems} />
                 </span>
               ))}
             </div>
@@ -199,8 +287,8 @@ export function Navbar() {
               <div className="nav-dropdown">
                 <div className="py-2">
                   {categories.map((category) => (
-                    <div key={category.id}>
-                      {category.children.length > 0 ? (
+                    <div key={category.public_id}>
+                      {(category.children ?? []).length > 0 ? (
                         <>
                           <div className="flex items-center justify-between px-4 py-2 text-sm hover:bg-gray-100 group/item">
                             <Link
@@ -222,9 +310,9 @@ export function Navbar() {
                           </div>
                           {expandedCategories[category.slug] && (
                             <div className="pl-2">
-                              {category.children.map((child) => (
+                              {(category.children ?? []).map((child) => (
                                 <Link
-                                  key={child.id}
+                                  key={child.public_id}
                                   href={`/products?category=${child.slug}`}
                                   className="nav-dropdown-subitem"
                                 >
@@ -296,8 +384,8 @@ export function Navbar() {
               {isCategoriesOpen && (
                 <div className="pl-4 mt-2 space-y-2">
                   {categories.map((category) => (
-                    <div key={category.id}>
-                      {category.children.length > 0 ? (
+                    <div key={category.public_id}>
+                      {(category.children ?? []).length > 0 ? (
                         <>
                           <div className="flex items-center justify-between text-sm py-2">
                             <Link
@@ -320,9 +408,9 @@ export function Navbar() {
                           </div>
                           {expandedCategories[category.slug] && (
                             <div className="pl-4 space-y-2">
-                              {category.children.map((child) => (
+                              {(category.children ?? []).map((child) => (
                                 <Link
-                                  key={child.id}
+                                  key={child.public_id}
                                   href={`/products?category=${child.slug}`}
                                   className="block text-sm text-gray-600 hover:text-black py-2"
                                   onClick={closeMobileMenu}

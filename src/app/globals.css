@@ -493,6 +493,14 @@ input:focus {
   position: relative;
   width: 100%;
 }
+.nav-notification-bar .nav-notification-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.nav-notification-bar .nav-notification-link:hover {
+  text-decoration: underline;
+}
 .nav-mobile-overlay {
   position: fixed;
   inset: 0;
@@ -617,6 +625,43 @@ input:focus {
   width: 100%;
   aspect-ratio: 16 / 9;
   background: linear-gradient(to bottom, hsl(220 13% 18%), hsl(var(--primary)));
+}
+
+.hero-text-banner {
+  min-height: 20rem;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  color: #fff;
+  background: linear-gradient(
+    to bottom,
+    hsl(220 13% 18%),
+    hsl(var(--primary))
+  );
+}
+
+.hero-text-banner-title {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  max-width: 40rem;
+}
+
+.hero-text-banner-text {
+  font-size: 1rem;
+  opacity: 0.95;
+  max-width: 36rem;
+  line-height: 1.5;
+}
+
+.hero-text-banner-link {
+  color: #fff;
 }
 
 /* Product card */

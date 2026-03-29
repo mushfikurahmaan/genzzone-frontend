@@ -102,8 +102,8 @@ export function MobileNavigation() {
             >
               <div className="p-2 space-y-1">
                 {categories.map((category) => (
-                  <div key={category.id}>
-                    {category.children.length > 0 ? (
+                  <div key={category.public_id}>
+                    {(category.children ?? []).length > 0 ? (
                       <>
                         <div className="flex items-center justify-between px-3 py-2 text-white hover:bg-gray-800 rounded transition-colors">
                           <Link
@@ -126,9 +126,9 @@ export function MobileNavigation() {
                         </div>
                         {expandedCategories[category.slug] && (
                           <div className="pl-2 space-y-1">
-                            {category.children.map((child) => (
+                            {(category.children ?? []).map((child) => (
                               <Link
-                                key={child.id}
+                                key={child.public_id}
                                 href={`/products?category=${child.slug}`}
                                 onClick={closeCategoryMenu}
                                 className="block px-3 py-2 pl-6 text-white hover:bg-gray-800 rounded transition-colors opacity-90"
