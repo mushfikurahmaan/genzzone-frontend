@@ -190,11 +190,36 @@ Parsers: multipart, form, JSON (`support/views.py`). Model requires `name`, `ema
 | `stock_status` | string | no | yes | See conventions |
 | `available_quantity` | int | no | yes | Aggregated stock display |
 | `variant_count` | int | no | yes | Active variants |
-| `extra_data` | JSON | inferred | yes | Model JSON |
+| `extra_data` | object | inferred | yes | Dynamic specs; see §3.2.1 |
+
+### 3.2.1 Product `extra_data` (how fields are added and exposed)
+
+**What it is**
+
+- On the `Product` model, **`extra_data`** is a **`JSONField`** (`engine/apps/products/models.py`). The storefront serializers pass it through **without renaming or reshaping** — whatever is stored on the product is what **`GET /api/v1/products/`** and **`GET /api/v1/products/<identifier>/`** return under the key `extra_data`.
+
+**How merchants add or change values (dashboard / admin)**
+
+1. **Schema** — The store defines which extra inputs exist (types, labels, etc.) in settings consumed as **`extra_field_schema`** on **`GET /api/v1/store/public/`** (see §3.7). That schema drives product forms in the dashboard (and analogous admin flows).
+2. **Per product** — When a product is saved through the intended path, values are **merged into `extra_data`** on the product record. Keys in `extra_data` are typically the field **display names / labels** from that schema (e.g. `"Material"`, `"GSM"`, `"Care"`), not stable internal ids — see how labels are applied when merging in **`ProductAdminForm.save()`** (`engine/apps/products/` admin/forms).
+3. **Storefront** — Headless clients **do not POST** `extra_data` on public product endpoints; they **read** it from list/detail responses. To show editable specs in a custom CMS, use dashboard or internal APIs that update products, not the publishable-key storefront write surface (product creation from the public API is out of scope for this document).
+
+**Types and edge cases**
+
+| Topic | Behavior |
+|-------|----------|
+| **Default** | New products use an **empty object** `{}`. |
+| **Cleared optional fields** | May be **omitted** from `extra_data` after save (e.g. `pop` on empty), not only set to `null`. Treat “no key” as “not set.” |
+| **Typical value types** | **String**, **number** (int/float), **boolean** when edited through the normal UI. The column is still JSON — **nested objects/arrays** are possible if something wrote them outside that path. |
+| **Variant options (color, size, …)** | Live under **`variants`** and **`variant_matrix`** on the detail payload. They are **not** automatically duplicated into **`extra_data`** unless someone enters them again as custom fields. |
+
+**Contract note for frontends**
+
+- If you need **stable, machine-readable keys** (e.g. `warranty_months`) across stores, that is a **product/schema or serializer** decision; the current **`extra_data`** contract optimizes for **human-readable labels** from the store schema.
 
 ### 3.3 Product (detail) — `StorefrontProductDetailSerializer`
 
-All list fields above where overlapping, plus:
+All list fields above where overlapping (including **`extra_data`**; see §3.2.1), plus:
 
 | Field | Type | Nullable | Read-only | Notes |
 |-------|------|----------|-----------|--------|
@@ -436,7 +461,7 @@ Use **HTTPS** in production. Do not embed **secret** keys (`ak_sk_`) in browser 
 
 1. **`GET /api/v1/store/public/`** — theme, currency, SEO defaults, policy links, `extra_field_schema` for product forms if used.
 2. **`GET /api/v1/catalog/filters/`** + **`GET /api/v1/products/`** — browse; use query params for filters and sort.
-3. **`GET /api/v1/products/<slug-or-prd_id>/`** — PDP; use `variants` / `variant_matrix` for selectors.
+3. **`GET /api/v1/products/<slug-or-prd_id>/`** — PDP; use `variants` / `variant_matrix` for selectors; render **`extra_data`** for dynamic specs (§3.2.1, §6.4).
 4. **`GET /api/v1/shipping/zones/`** → **`GET /api/v1/shipping/options/`** or **`POST /api/v1/shipping/preview/`** for quotes.
 5. **`POST /api/v1/pricing/breakdown/`** — cart totals (merchandise + shipping when zone/method provided).
 6. **`POST /api/v1/orders/initiate-checkout/`** when entering checkout (optional analytics).
@@ -490,6 +515,12 @@ const receipt = await storefrontFetch("/orders/", {
 ```
 
 *(Axios is not used in the backend; the pattern above mirrors standard browser `fetch`.)*
+
+### 6.4 This repo (Genzzone) — PDP and `extra_data`
+
+The product detail page reads **`extra_data`** from the detail response and shows **non-empty** entries in a **two-column spec table** under **PRODUCT DETAILS** (label = object key, value formatted by type: string / number / boolean → “Yes” or “No” / nested JSON → `JSON.stringify`). The block is omitted when there is nothing to show after filtering empty strings and nullish values.
+
+The **CARE INSTRUCTIONS** section uses **fixed copy** for this storefront. To avoid duplicate care lines, the key **`Care`** (case-insensitive label) is **not** included in that spec table when present in `extra_data`. Merchants should still use the dashboard extra-field labeled **Care** if other channels consume it; this site simply does not surface that key in the details table.
 
 ---
 
