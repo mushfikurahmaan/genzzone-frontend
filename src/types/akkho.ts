@@ -6,7 +6,6 @@ export interface StorefrontProductList {
   public_id: string;
   name: string;
   brand: string;
-  sku: string;
   price: string;
   original_price: string | null;
   image_url: string | null;
@@ -37,7 +36,6 @@ export interface VariantOption {
 
 export interface StorefrontProductVariant {
   public_id: string;
-  sku: string;
   available_quantity: number;
   stock_status: StockStatus;
   price: string;

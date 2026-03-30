@@ -506,7 +506,6 @@ export function ProductDetailClient({
                 <ul className="space-y-1.5 text-gray-600">
                   <li>• Category: {product.category_name}</li>
                   {product.brand ? <li>• Brand: {product.brand}</li> : null}
-                  {product.sku ? <li>• SKU: {product.sku}</li> : null}
                 </ul>
                 {extraDataRows.length > 0 ? (
                   <table className="mt-4 w-full border-collapse text-left text-sm">
