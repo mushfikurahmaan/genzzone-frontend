@@ -246,6 +246,23 @@ input:focus {
   }
 }
 
+/* Homepage category feed: 2 cols mobile, 4 cols desktop (no 3-col step) */
+.homepage-category-product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+@media (min-width: 768px) {
+  .homepage-category-product-grid {
+    gap: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .homepage-category-product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 .font-heading {
   font-family: var(--font-space-grotesk), "Space Grotesk", sans-serif;
 }

@@ -25,10 +25,9 @@ const nextConfig: NextConfig = {
         port: '8000',
         pathname: '/media/**',
       },
-      // Media CDN / static assets (e.g. hero images)
       {
         protocol: 'https',
-        hostname: 'media.genzzone.com',
+        hostname: 'cdn.akkho.com',
         pathname: '/**',
       },
     ],
