@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'cdn.akkho.com',
+        hostname: 'storage.paperbase,me',
         pathname: '/**',
       },
     ],
