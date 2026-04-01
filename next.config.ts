@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'storage.paperbase,me',
+        hostname: 'storage.paperbase.me',
         pathname: '/**',
       },
     ],

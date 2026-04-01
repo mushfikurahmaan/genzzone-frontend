@@ -85,6 +85,17 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
         </div>
+
+        {isOutOfStock ? (
+          <span className="product-card-cta-disabled">Sold Out</span>
+        ) : (
+          <Link
+            href={`/order?product=${encodeURIComponent(product.public_id)}`}
+            className="product-card-cta"
+          >
+            Order Now
+          </Link>
+        )}
       </div>
     </div>
   );
