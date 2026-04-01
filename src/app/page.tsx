@@ -37,6 +37,15 @@ export default async function Home() {
     fetchCatalogProductsCapped(),
   ]);
 
+  const fetchLabels = ["heroBanner", "categoryTree", "catalogProducts"] as const;
+  results.forEach((r, idx) => {
+    if (r.status === "rejected") {
+      const reason =
+        r.reason instanceof Error ? r.reason.message : String(r.reason);
+      console.error(`[Home SSR fetch failed] ${fetchLabels[idx]}: ${reason}`);
+    }
+  });
+
   if (results[0].status === "fulfilled") heroBanner = results[0].value;
   if (results[1].status === "fulfilled") categoryTree = results[1].value;
   if (results[2].status === "fulfilled") catalogProducts = results[2].value;
@@ -45,6 +54,12 @@ export default async function Home() {
     categoryTree,
     catalogProducts
   );
+
+  if (categoryTree.length === 0 || catalogProducts.length === 0) {
+    console.error(
+      `[Home SSR data summary] categoryTree=${categoryTree.length} catalogProducts=${catalogProducts.length} blocks=${categoryBlocks.length}`
+    );
+  }
 
   const heroImageUrl = heroBanner?.image_url
     ? getServerImageUrl(heroBanner.image_url)
