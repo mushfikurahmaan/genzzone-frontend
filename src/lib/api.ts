@@ -20,7 +20,7 @@ const API_BASE_URL = (
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 ).replace(/\/$/, "");
 const PUBLISHABLE_KEY =
-  process.env.NEXT_PUBLIC_AKKHO_PUBLISHABLE_KEY || "";
+  process.env.NEXT_PUBLIC_PAPERBASE_PUBLISHABLE_KEY || "";
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api/v1`,

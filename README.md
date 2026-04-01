@@ -105,7 +105,7 @@ Cart sync with the server is not part of the storefront API; the in-app cart con
    - Set **Root Directory** to `/` (or leave empty)
    - Add environment variables:
      - `NEXT_PUBLIC_API_URL` = `https://your-akkho-api-origin` (no `/api/v1` suffix)
-     - `NEXT_PUBLIC_AKKHO_PUBLISHABLE_KEY` = `ak_pk_…`
+     - `NEXT_PUBLIC_PAPERBASE_PUBLISHABLE_KEY` = `ak_pk_…`
      - `NEXT_PUBLIC_META_PIXEL_ID` = your Meta Pixel ID
 4. Deploy!
 
@@ -120,7 +120,7 @@ Vercel will automatically:
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `NEXT_PUBLIC_API_URL` | Akkho API origin (e.g. `https://api.example.com`) | Yes |
-| `NEXT_PUBLIC_AKKHO_PUBLISHABLE_KEY` | Storefront publishable key `ak_pk_…` | Yes |
+| `NEXT_PUBLIC_PAPERBASE_PUBLISHABLE_KEY` | Storefront publishable key `ak_pk_…` | Yes |
 | `NEXT_PUBLIC_META_PIXEL_ID` | Meta Pixel ID for PageView tracking | No (pixel disabled if unset) |
 
 ## Development
@@ -144,7 +144,7 @@ The production build will be in the `.next` directory.
 
 ### API URL and storefront key
 
-Configured in `src/lib/api.ts`, `src/lib/api-server.ts`, and `next.config.ts` (image host). Set `NEXT_PUBLIC_API_URL` to your Akkho API origin and `NEXT_PUBLIC_AKKHO_PUBLISHABLE_KEY` to the store’s `ak_pk_…` key.
+Configured in `src/lib/api.ts`, `src/lib/api-server.ts`, and `next.config.ts` (image host). Set `NEXT_PUBLIC_API_URL` to your Akkho API origin and `NEXT_PUBLIC_PAPERBASE_PUBLISHABLE_KEY` to the store’s `ak_pk_…` key.
 
 ### Image Configuration
 
